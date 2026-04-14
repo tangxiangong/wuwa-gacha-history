@@ -6653,6 +6653,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_repr",
+ "thiserror 2.0.18",
  "toasty",
  "tokio",
 ]
@@ -6666,6 +6667,8 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+ "tokio",
+ "wuwa-gacha-history",
 ]
 
 [[package]]
