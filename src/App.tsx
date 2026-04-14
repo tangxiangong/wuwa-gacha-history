@@ -1,50 +1,37 @@
 import { createSignal } from "solid-js";
-import logo from "./assets/logo.svg";
-import { invoke } from "@tauri-apps/api/core";
+import type { CardPool, GachaFilter } from "./lib/types";
+import Sidebar from "./components/Sidebar";
+import ContentArea from "./components/ContentArea";
+import ExportDialog from "./components/ExportDialog";
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = createSignal("");
-  const [name, setName] = createSignal("");
+  const [activePool, setActivePool] = createSignal<CardPool | null>(null);
+  const [exportOpen, setExportOpen] = createSignal(false);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name: name() }));
-  }
+  // TODO: This should come from a settings view in the future.
+  // For now, hardcoded or empty — records won't load without a valid userId.
+  const userId = () => "";
+
+  const exportFilter = (): GachaFilter => ({
+    cardPool: activePool(),
+  });
 
   return (
-    <main class="container">
-      <h1>Welcome to Tauri + Solid</h1>
-
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={logo} class="logo solid" alt="Solid logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and Solid logos to learn more.</p>
-
-      <form
-        class="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg()}</p>
-    </main>
+    <div class="app">
+      <Sidebar
+        activePool={activePool()}
+        onSelectPool={setActivePool}
+        onExport={() => setExportOpen(true)}
+      />
+      <ContentArea activePool={activePool()} userId={userId()} />
+      <ExportDialog
+        open={exportOpen()}
+        userId={userId()}
+        filter={exportFilter()}
+        onClose={() => setExportOpen(false)}
+      />
+    </div>
   );
 }
 
