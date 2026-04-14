@@ -94,6 +94,7 @@ async fn export_gacha_records(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             fetch_gacha_records,
             query_gacha_records,
