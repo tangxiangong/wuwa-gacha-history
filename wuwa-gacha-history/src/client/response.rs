@@ -32,3 +32,9 @@ pub enum QualityLevel {
     #[column(variant = 5)]
     FiveStar = 5,
 }
+
+impl std::fmt::Display for QualityLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}★", *self as u8)
+    }
+}
