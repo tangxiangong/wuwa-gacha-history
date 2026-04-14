@@ -46,7 +46,9 @@ export default function RecordTable(props: RecordTableProps) {
           {(record) => (
             <div class={`record-row ${qualityClass(record.qualityLevel)}`}>
               <span class="col-name">{record.name}</span>
-              <span class="col-quality">{qualityText(record.qualityLevel)}</span>
+              <span class="col-quality">
+                {qualityText(record.qualityLevel)}
+              </span>
               <span class="col-time">{formatTime(record.time)}</span>
             </div>
           )}

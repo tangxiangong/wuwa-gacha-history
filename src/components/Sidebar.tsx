@@ -17,7 +17,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "其他",
-    items: [CardPool.NoviceConvene, CardPool.BeginnerChoiceConvene, CardPool.GivebackCustomConvene],
+    items: [
+      CardPool.NoviceConvene,
+      CardPool.BeginnerChoiceConvene,
+      CardPool.GivebackCustomConvene,
+    ],
   },
 ];
 

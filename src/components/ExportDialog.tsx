@@ -66,7 +66,13 @@ export default function ExportDialog(props: ExportDialogProps) {
             ))}
           </div>
           <Show when={error()}>
-            <p style={{ color: "var(--star-5)", "font-size": "12px", "margin-top": "8px" }}>
+            <p
+              style={{
+                color: "var(--star-5)",
+                "font-size": "12px",
+                "margin-top": "8px",
+              }}
+            >
               {error()}
             </p>
           </Show>
@@ -74,7 +80,11 @@ export default function ExportDialog(props: ExportDialogProps) {
             <button class="btn" onClick={() => props.onClose()}>
               取消
             </button>
-            <button class="btn btn-primary" onClick={handleExport} disabled={exporting()}>
+            <button
+              class="btn btn-primary"
+              onClick={handleExport}
+              disabled={exporting()}
+            >
               {exporting() ? "导出中..." : "导出"}
             </button>
           </div>
