@@ -16,13 +16,13 @@ pub struct ResponseRecord {
     pub card_pool_type: CardPool,
     pub resource_id: u32,
     pub quality_level: QualityLevel,
-    pub resource_name: String,
+    pub resource_type: String,
     pub name: String,
     pub count: u32,
     pub time: DateTime,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Deserialize_repr, toasty::Embed)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Serialize_repr, serde_repr::Deserialize_repr, toasty::Embed)]
 #[repr(u8)]
 pub enum QualityLevel {
     #[column(variant = 3)]

@@ -4,7 +4,7 @@ const NOVICE_CONVENE_ID: &str = "e0fa20f7-8a2b-4c5b-9de8-8e5a3c2e4d7f";
 const BEGINNER_CHOICE_CONVENE_ID: &str = "d3aa37e3-a8b4-4d5c-8a1e-5e7b9c2d1f3a";
 const GIVEBACK_CUSTOM_CONVNEN_ID: &str = "c4f5d6e7-b1a2-3c4d-5e6f-7a8b9c0d1e2f";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Deserialize_repr, toasty::Embed)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Serialize_repr, serde_repr::Deserialize_repr, toasty::Embed)]
 #[repr(u8)]
 pub enum CardPool {
     #[column(variant = 1)]
