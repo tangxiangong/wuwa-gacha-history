@@ -9,3 +9,12 @@ publish.workspace = true
 repository.workspace = true
 
 [dependencies]
+jiff = { version = "0.2", features = ["serde"] }
+reqwest = { version = "0.13", features = ["json"] }
+serde = { workspace = true }
+serde_repr = "0.1"
+toasty = { version = "0.4", features = ["sqlite", "jiff"] }
+tokio = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros"] }
