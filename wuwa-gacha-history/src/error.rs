@@ -12,4 +12,19 @@ pub enum Error {
 
     #[error("API error (code {code}): {message}")]
     Api { code: u32, message: String },
+
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("CSV error: {0}")]
+    Csv(#[from] csv::Error),
+
+    #[error("Excel error: {0}")]
+    Xlsx(#[from] rust_xlsxwriter::XlsxError),
+
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("{0}")]
+    Other(String),
 }

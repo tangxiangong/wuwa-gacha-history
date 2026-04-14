@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use tauri::Manager;
 use wuwa_gacha_history::{
-    add_records, query_records, CardPool, GachaFilter, GachaHistoryClient, GachaRecord,
-    RequestParams,
+    add_records, export_to_file, query_records, CardPool, GachaFilter, GachaHistoryClient,
+    GachaRecord, RequestParams,
 };
 
 #[derive(Debug, Clone, Deserialize)]
@@ -75,6 +75,21 @@ async fn query_gacha_records(
     Ok(records)
 }
 
+#[tauri::command]
+async fn export_gacha_records(
+    app: tauri::AppHandle,
+    user_id: String,
+    filter: GachaFilter,
+    path: String,
+) -> Result<(), String> {
+    let db_path = db_path(&app)?;
+    let records = query_records(&db_path, &user_id, &filter)
+        .await
+        .map_err(|e| e.to_string())?;
+    export_to_file(&records, &path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -82,6 +97,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             fetch_gacha_records,
             query_gacha_records,
+            export_gacha_records,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

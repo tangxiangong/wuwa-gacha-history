@@ -23,6 +23,20 @@ pub enum CardPool {
     GivebackCustomConvene,
 }
 
+impl std::fmt::Display for CardPool {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::FeaturedResonatorConvene => write!(f, "限定角色"),
+            Self::FeaturedWeaponConvene => write!(f, "限定武器"),
+            Self::StandardResonatorConvene => write!(f, "常驻角色"),
+            Self::StandardWeaponConvene => write!(f, "常驻武器"),
+            Self::NoviceConvene => write!(f, "新手唤取"),
+            Self::BeginnerChoiceConvene => write!(f, "新手自选"),
+            Self::GivebackCustomConvene => write!(f, "感恩自选"),
+        }
+    }
+}
+
 impl CardPool {
     pub fn pool_id(&self) -> Option<String> {
         match self {
