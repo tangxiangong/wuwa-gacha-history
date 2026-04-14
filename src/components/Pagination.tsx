@@ -8,7 +8,8 @@ interface PaginationProps {
 }
 
 export default function Pagination(props: PaginationProps) {
-  const totalPages = () => Math.max(1, Math.ceil(props.totalRecords / props.pageSize));
+  const totalPages = () =>
+    Math.max(1, Math.ceil(props.totalRecords / props.pageSize));
 
   const pageNumbers = () => {
     const total = totalPages();

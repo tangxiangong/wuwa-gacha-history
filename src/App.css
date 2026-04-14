@@ -15,7 +15,12 @@
   --star-4: #9b59b6;
   --star-3: #5ea6e8;
 
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-primary);
@@ -88,7 +93,9 @@
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .nav-item:hover {
@@ -276,9 +283,15 @@
   color: var(--text-secondary);
 }
 
-.star-5 { color: var(--star-5); }
-.star-4 { color: var(--star-4); }
-.star-3 { color: var(--star-3); }
+.star-5 {
+  color: var(--star-5);
+}
+.star-4 {
+  color: var(--star-4);
+}
+.star-3 {
+  color: var(--star-3);
+}
 
 .record-empty {
   text-align: center;

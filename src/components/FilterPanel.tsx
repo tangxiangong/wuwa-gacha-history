@@ -28,13 +28,22 @@ export default function FilterPanel(props: FilterPanelProps) {
       <div class="filter-panel">
         <div class="filter-row">
           <span class="filter-label">星级</span>
-          <button class={chipClass(QualityLevel.FiveStar)} onClick={() => toggleQuality(QualityLevel.FiveStar)}>
+          <button
+            class={chipClass(QualityLevel.FiveStar)}
+            onClick={() => toggleQuality(QualityLevel.FiveStar)}
+          >
             5★
           </button>
-          <button class={chipClass(QualityLevel.FourStar)} onClick={() => toggleQuality(QualityLevel.FourStar)}>
+          <button
+            class={chipClass(QualityLevel.FourStar)}
+            onClick={() => toggleQuality(QualityLevel.FourStar)}
+          >
             4★
           </button>
-          <button class={chipClass(QualityLevel.ThreeStar)} onClick={() => toggleQuality(QualityLevel.ThreeStar)}>
+          <button
+            class={chipClass(QualityLevel.ThreeStar)}
+            onClick={() => toggleQuality(QualityLevel.ThreeStar)}
+          >
             3★
           </button>
         </div>

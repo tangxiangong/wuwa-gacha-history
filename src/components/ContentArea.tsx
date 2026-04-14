@@ -21,13 +21,18 @@ export default function ContentArea(props: ContentAreaProps) {
 
   // Filter state
   const [filterOpen, setFilterOpen] = createSignal(false);
-  const [qualityLevel, setQualityLevel] = createSignal<QualityLevel | null>(null);
+  const [qualityLevel, setQualityLevel] = createSignal<QualityLevel | null>(
+    null,
+  );
   const [nameQuery, setNameQuery] = createSignal("");
   const [timeFrom, setTimeFrom] = createSignal("");
   const [timeTo, setTimeTo] = createSignal("");
 
   const hasActiveFilter = () =>
-    qualityLevel() !== null || nameQuery() !== "" || timeFrom() !== "" || timeTo() !== "";
+    qualityLevel() !== null ||
+    nameQuery() !== "" ||
+    timeFrom() !== "" ||
+    timeTo() !== "";
 
   function buildFilter(): GachaFilter {
     return {
@@ -65,7 +70,13 @@ export default function ContentArea(props: ContentAreaProps) {
   // Reset page and reload when pool or filters change
   createEffect(
     on(
-      () => [props.activePool, qualityLevel(), nameQuery(), timeFrom(), timeTo()],
+      () => [
+        props.activePool,
+        qualityLevel(),
+        nameQuery(),
+        timeFrom(),
+        timeTo(),
+      ],
       () => {
         setPage(1);
         loadRecords();
@@ -74,7 +85,13 @@ export default function ContentArea(props: ContentAreaProps) {
   );
 
   // Reload when page changes (but don't reset page)
-  createEffect(on(() => page(), () => loadRecords(), { defer: true }));
+  createEffect(
+    on(
+      () => page(),
+      () => loadRecords(),
+      { defer: true },
+    ),
+  );
 
   function handlePageChange(newPage: number) {
     setPage(newPage);
@@ -87,7 +104,9 @@ export default function ContentArea(props: ContentAreaProps) {
         fallback={<div class="record-empty">请选择一个卡池类型</div>}
       >
         <div class="content-header">
-          <span class="content-title">{CARD_POOL_LABELS[props.activePool!]}</span>
+          <span class="content-title">
+            {CARD_POOL_LABELS[props.activePool!]}
+          </span>
           <button
             class={`filter-toggle ${hasActiveFilter() ? "has-filter" : ""}`}
             onClick={() => setFilterOpen(!filterOpen())}
