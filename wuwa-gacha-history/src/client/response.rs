@@ -1,5 +1,5 @@
 use crate::CardPool;
-use jiff::civil::DateTime;
+use chrono::NaiveDateTime;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -19,17 +19,23 @@ pub struct ResponseRecord {
     pub resource_type: String,
     pub name: String,
     pub count: u32,
-    pub time: DateTime,
+    #[serde(deserialize_with = "deserialize_datetime")]
+    pub time: NaiveDateTime,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Serialize_repr, serde_repr::Deserialize_repr, toasty::Embed)]
+fn deserialize_datetime<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    NaiveDateTime::parse_from_str(&s, "%Y-%m-%d %H:%M:%S").map_err(serde::de::Error::custom)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Serialize_repr, serde_repr::Deserialize_repr)]
 #[repr(u8)]
 pub enum QualityLevel {
-    #[column(variant = 3)]
     ThreeStar = 3,
-    #[column(variant = 4)]
     FourStar = 4,
-    #[column(variant = 5)]
     FiveStar = 5,
 }
 

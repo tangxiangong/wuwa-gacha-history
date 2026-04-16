@@ -4,23 +4,16 @@ const NOVICE_CONVENE_ID: &str = "e0fa20f7-8a2b-4c5b-9de8-8e5a3c2e4d7f";
 const BEGINNER_CHOICE_CONVENE_ID: &str = "d3aa37e3-a8b4-4d5c-8a1e-5e7b9c2d1f3a";
 const GIVEBACK_CUSTOM_CONVNEN_ID: &str = "c4f5d6e7-b1a2-3c4d-5e6f-7a8b9c0d1e2f";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Serialize_repr, serde_repr::Deserialize_repr, toasty::Embed)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Serialize_repr, serde_repr::Deserialize_repr)]
 #[repr(u8)]
 pub enum CardPool {
-    #[column(variant = 1)]
     FeaturedResonatorConvene = 1,
-    #[column(variant = 2)]
-    FeaturedWeaponConvene,
-    #[column(variant = 3)]
-    StandardResonatorConvene,
-    #[column(variant = 4)]
-    StandardWeaponConvene,
-    #[column(variant = 5)]
-    NoviceConvene,
-    #[column(variant = 6)]
-    BeginnerChoiceConvene,
-    #[column(variant = 7)]
-    GivebackCustomConvene,
+    FeaturedWeaponConvene = 2,
+    StandardResonatorConvene = 3,
+    StandardWeaponConvene = 4,
+    NoviceConvene = 5,
+    BeginnerChoiceConvene = 6,
+    GivebackCustomConvene = 7,
 }
 
 impl std::fmt::Display for CardPool {
