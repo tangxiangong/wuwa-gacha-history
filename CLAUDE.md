@@ -47,7 +47,7 @@ cargo check --workspace
 - **`client/utils.rs`** — `CardPool` enum mapping the 7 convene/banner types (featured resonator/weapon, standard, novice, etc.) to their fixed UUIDs.
 - **`client/response.rs`** — Response deserialization types. `QualityLevel` (3/4/5 star) uses `serde_repr` for integer enum deserialization.
 - **`client/request.rs`** — `RequestParams` serialized as camelCase JSON for the API.
-- **`db.rs`** — SQLite persistence via `toasty` ORM with `jiff` datetime support. Uses a global `OnceCell<Mutex<Db>>` singleton. `GachaRecord` model (table "gacha") with fields: id, user_id, server_id, card_pool, language_code, record_id, quality_level, name, time. `GachaFilter` supports: card_pool, quality_level, name, time_from, time_to, limit, offset.
+- **`db.rs`** — SQLite persistence via `sqlx` with raw SQL queries. Uses a global `OnceCell<SqlitePool>` singleton. `GachaRecord` struct (table "gacha") with fields: id, user_id, server_id, card_pool, language_code, record_id (UNIQUE), quality_level, name, time. Dynamic query building via `sqlx::QueryBuilder`. `GachaFilter` supports: card_pool, quality_level, name, time_from, time_to, limit, offset.
 - **`export.rs`** — File export via `export_to_file()` which detects format from extension. Supports CSV (`csv` crate), XLSX (`rust_xlsxwriter`), and JSON. Headers are Chinese: 时间, 名称, 星级, 卡池类型.
 - **`error.rs`** — `Error` enum via `thiserror` with variants: Http, Db, Api, Io, Csv, Xlsx, Json, Other. Custom `Result<T>` type alias.
 
@@ -74,7 +74,7 @@ Three `#[tauri::command]` functions bridge frontend to core library. All return 
 
 ### Key Dependencies
 
-- **Rust**: `reqwest` (HTTP), `toasty` (ORM/SQLite), `jiff` (datetime), `serde`/`serde_repr` (serialization), `tokio` (async runtime), `thiserror` (errors), `csv`/`rust_xlsxwriter` (export)
+- **Rust**: `reqwest` (HTTP), `sqlx` (SQLite), `chrono` (datetime), `serde`/`serde_repr` (serialization), `tokio` (async runtime), `thiserror` (errors), `csv`/`rust_xlsxwriter` (export)
 - **Frontend**: `solid-js`, `@tauri-apps/api`, `@tauri-apps/plugin-dialog`, Vite, TypeScript
 - **Package manager**: `bun` (configured in `tauri.conf.json` as the `beforeDevCommand`/`beforeBuildCommand` runner)
 

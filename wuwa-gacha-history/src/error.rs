@@ -8,7 +8,7 @@ pub enum Error {
     Http(#[from] reqwest::Error),
 
     #[error("Database error: {0}")]
-    Db(#[from] toasty::Error),
+    Db(#[from] sqlx::Error),
 
     #[error("API error (code {code}): {message}")]
     Api { code: u32, message: String },
