@@ -12,3 +12,4 @@ src-tauri/gen/schemas
 .claude/settings.local.json
 .superpowers/
 .worktrees/
+docs/superpowers/
