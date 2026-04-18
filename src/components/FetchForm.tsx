@@ -41,20 +41,20 @@ export default function FetchForm(props: FetchFormProps) {
     }
     const obj = parsed as Record<string, unknown>;
     const missing = REQUIRED_FIELDS.filter(
-      (k) => typeof obj[k] !== "string" || (obj[k] as string) === "",
+      (k) => typeof obj[k] !== "string" || (obj[k] as string).trim() === "",
     );
     if (missing.length > 0) {
       throw new Error(`缺少必要字段: ${missing.join(", ")}`);
     }
-    const playerId = obj.playerId as string;
+    const playerId = (obj.playerId as string).trim();
     if (!/^\d{9}$/.test(playerId)) {
       throw new Error("playerId 格式错误");
     }
     return {
       playerId,
-      serverId: obj.serverId as string,
-      languageCode: obj.languageCode as string,
-      recordId: obj.recordId as string,
+      serverId: (obj.serverId as string).trim(),
+      languageCode: (obj.languageCode as string).trim(),
+      recordId: (obj.recordId as string).trim(),
     };
   }
 
@@ -73,7 +73,7 @@ export default function FetchForm(props: FetchFormProps) {
       await fetchGachaRecords(params, ALL_POOLS);
       props.onSuccess(params.playerId);
     } catch (e) {
-      setError(String(e));
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
