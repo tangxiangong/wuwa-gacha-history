@@ -199,6 +199,28 @@ pub async fn query_records(
     rows.iter().map(record_from_row).collect()
 }
 
+pub async fn list_users(path: &str) -> Result<Vec<String>> {
+    let pool = pool(path).await?;
+
+    let rows = sqlx::query(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'gacha\\_%' ESCAPE '\\'",
+    )
+    .fetch_all(pool)
+    .await?;
+
+    let mut ids = Vec::with_capacity(rows.len());
+    for row in rows {
+        let name: String = row.try_get("name")?;
+        if let Some(id) = name.strip_prefix("gacha_") {
+            if validate_player_id(id).is_ok() {
+                ids.push(id.to_string());
+            }
+        }
+    }
+
+    Ok(ids)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -314,5 +336,21 @@ mod tests {
         assert_eq!(r1[0].record_id, "a");
         assert_eq!(r2.len(), 1);
         assert_eq!(r2[0].record_id, "b");
+    }
+
+    #[tokio::test]
+    async fn list_users_returns_player_ids() {
+        let path = test_db_path();
+
+        add_records(&path, "333333333", "s", "zh-Hans", vec![])
+            .await
+            .unwrap();
+        add_records(&path, "444444444", "s", "zh-Hans", vec![])
+            .await
+            .unwrap();
+
+        let users = list_users(&path).await.unwrap();
+        assert!(users.contains(&"333333333".to_string()));
+        assert!(users.contains(&"444444444".to_string()));
     }
 }
