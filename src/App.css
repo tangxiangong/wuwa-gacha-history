@@ -391,6 +391,31 @@
   background: var(--accent-hover);
 }
 
+.btn-ghost {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-block {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .format-options {
   display: flex;
   gap: 8px;
@@ -462,6 +487,19 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.fetch-form-helpers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fetch-form-helpers-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-right: 2px;
 }
 
 /* ===== Welcome page ===== */

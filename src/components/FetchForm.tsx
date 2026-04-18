@@ -248,6 +248,37 @@ export default function FetchForm(props: FetchFormProps) {
 
   return (
     <div class="fetch-form">
+      <div class="fetch-form-helpers">
+        <span class="fetch-form-helpers-label">自动填充参数：</span>
+        <button
+          class="btn btn-ghost"
+          onClick={handleReadLog}
+          disabled={busy()}
+          title="从游戏日志提取抽卡参数"
+        >
+          {readingLog() ? "读取中…" : "从日志获取"}
+        </button>
+        <button
+          class="btn btn-ghost"
+          onClick={handlePickGameDir}
+          disabled={busy()}
+          title="选择鸣潮游戏安装目录"
+        >
+          选择游戏目录…
+        </button>
+        <button
+          class="btn btn-ghost"
+          onClick={sniffing() ? handleCancelSniff : handleAutoCaptureSniff}
+          disabled={loading() || readingLog()}
+          title={
+            sniffing()
+              ? "停止抓包并还原系统代理"
+              : "启动本地 MITM 代理抓取游戏请求（需授权证书）"
+          }
+        >
+          {sniffing() ? "取消监听" : "抓包获取"}
+        </button>
+      </div>
       <textarea
         class="fetch-form-input"
         placeholder='粘贴 JSON，例如 {"playerId":"123456789","serverId":"...","languageCode":"zh-Hans","recordId":"..."}'
@@ -261,43 +292,13 @@ export default function FetchForm(props: FetchFormProps) {
       )}
       {status() && <p class="fetch-form-status">{status()}</p>}
       {error() && <p class="fetch-form-error">{error()}</p>}
-      <div class="fetch-form-actions">
-        <button
-          class="btn btn-secondary"
-          onClick={handleReadLog}
-          disabled={busy()}
-          title="从游戏日志提取抽卡参数"
-        >
-          {readingLog() ? "读取中…" : "从日志获取"}
-        </button>
-        <button
-          class="btn btn-secondary"
-          onClick={handlePickGameDir}
-          disabled={busy()}
-          title="选择鸣潮游戏安装目录"
-        >
-          选择游戏目录…
-        </button>
-        <button
-          class="btn btn-secondary"
-          onClick={sniffing() ? handleCancelSniff : handleAutoCaptureSniff}
-          disabled={loading() || readingLog()}
-          title={
-            sniffing()
-              ? "停止抓包并还原系统代理"
-              : "启动本地 MITM 代理抓取游戏请求（需授权证书）"
-          }
-        >
-          {sniffing() ? "取消监听" : "抓包获取"}
-        </button>
-        <button
-          class="btn btn-primary"
-          onClick={handleFetch}
-          disabled={busy() || json().trim() === ""}
-        >
-          {loading() ? "获取中..." : "获取记录"}
-        </button>
-      </div>
+      <button
+        class="btn btn-primary btn-block"
+        onClick={handleFetch}
+        disabled={busy() || json().trim() === ""}
+      >
+        {loading() ? "获取中..." : "获取记录"}
+      </button>
     </div>
   );
 }
