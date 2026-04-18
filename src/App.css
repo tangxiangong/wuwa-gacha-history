@@ -417,3 +417,32 @@
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
+
+/* ===== Fetch form ===== */
+.fetch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fetch-form-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.fetch-form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.fetch-form-error {
+  color: var(--star-5);
+  font-size: 12px;
+}
