@@ -447,6 +447,23 @@
   font-size: 12px;
 }
 
+.fetch-form-status {
+  color: var(--star-4);
+  font-size: 12px;
+}
+
+.fetch-form-hint {
+  color: var(--text-secondary);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.fetch-form-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* ===== Welcome page ===== */
 .welcome-page {
   flex: 1;

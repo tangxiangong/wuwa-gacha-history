@@ -26,3 +26,42 @@ export async function exportGachaRecords(
 export async function listUsers(): Promise<string[]> {
   return invoke("list_users");
 }
+
+export async function startSniffer(): Promise<number> {
+  return invoke("start_sniffer");
+}
+
+export async function stopSniffer(): Promise<void> {
+  return invoke("stop_sniffer");
+}
+
+export const EVENT_SNIFFER_PARAMS = "sniffer://params-captured";
+export const EVENT_SNIFFER_STATUS = "sniffer://status";
+
+export interface CapturedParams {
+  playerId: string;
+  serverId: string;
+  languageCode: string;
+  recordId: string;
+  cardPoolId: string;
+}
+
+export interface LogParams {
+  playerId: string;
+  serverId: string;
+  languageCode: string;
+  recordId: string;
+  cardPoolId: string | null;
+  sourcePath: string;
+  sourceUrl: string;
+}
+
+export async function readParamsFromLog(opts: {
+  path?: string;
+  gameDir?: string;
+} = {}): Promise<LogParams> {
+  return invoke("read_params_from_log", {
+    path: opts.path,
+    gameDir: opts.gameDir,
+  });
+}

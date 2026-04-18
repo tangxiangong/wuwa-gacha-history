@@ -1,9 +1,16 @@
+mod log_reader;
+mod sniffer;
+
+use std::path::PathBuf;
+
 use serde::Deserialize;
 use tauri::Manager;
 use wuwa_gacha_history::{
     add_records, export_to_file, list_users as list_users_impl, query_records, CardPool,
     GachaFilter, GachaHistoryClient, GachaRecord, RequestParams,
 };
+
+use sniffer::SnifferState;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -96,16 +103,49 @@ async fn list_users(app: tauri::AppHandle) -> Result<Vec<String>, String> {
     list_users_impl(&db_path).await.map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+async fn start_sniffer(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, SnifferState>,
+) -> Result<u16, String> {
+    let ca_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("mitm");
+    state.start(app.clone(), ca_dir).await
+}
+
+#[tauri::command]
+async fn stop_sniffer(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, SnifferState>,
+) -> Result<(), String> {
+    state.stop(app).await
+}
+
+#[tauri::command]
+async fn read_params_from_log(
+    path: Option<String>,
+    game_dir: Option<String>,
+) -> Result<log_reader::LogParams, String> {
+    log_reader::read_params(path.map(PathBuf::from), game_dir.map(PathBuf::from)).await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .manage(SnifferState::default())
         .invoke_handler(tauri::generate_handler![
             fetch_gacha_records,
             query_gacha_records,
             export_gacha_records,
             list_users,
+            start_sniffer,
+            stop_sniffer,
+            read_params_from_log,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

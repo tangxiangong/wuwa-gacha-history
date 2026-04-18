@@ -1,5 +1,14 @@
-import { createSignal } from "solid-js";
-import { fetchGachaRecords } from "../lib/commands";
+import { createSignal, onCleanup } from "solid-js";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import {
+  EVENT_SNIFFER_PARAMS,
+  fetchGachaRecords,
+  readParamsFromLog,
+  startSniffer,
+  stopSniffer,
+  type CapturedParams,
+} from "../lib/commands";
 import { CardPool } from "../lib/types";
 import type { FetchParams } from "../lib/types";
 
@@ -20,6 +29,25 @@ const REQUIRED_FIELDS: (keyof FetchParams)[] = [
   "recordId",
 ];
 
+const SNIFFER_TIMEOUT_MS = 180_000;
+const GAME_DIR_KEY = "wuwa.gameDir";
+
+function loadGameDir(): string | undefined {
+  try {
+    return localStorage.getItem(GAME_DIR_KEY) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function saveGameDir(dir: string) {
+  try {
+    localStorage.setItem(GAME_DIR_KEY, dir);
+  } catch {
+    // ignore
+  }
+}
+
 interface FetchFormProps {
   onSuccess: (playerId: string) => void | Promise<void>;
 }
@@ -27,7 +55,33 @@ interface FetchFormProps {
 export default function FetchForm(props: FetchFormProps) {
   const [json, setJson] = createSignal("");
   const [loading, setLoading] = createSignal(false);
+  const [sniffing, setSniffing] = createSignal(false);
+  const [readingLog, setReadingLog] = createSignal(false);
   const [error, setError] = createSignal("");
+  const [status, setStatus] = createSignal("");
+  const [gameDir, setGameDir] = createSignal<string | undefined>(loadGameDir());
+
+  const busy = () => loading() || sniffing() || readingLog();
+
+  function fillJson(p: {
+    playerId: string;
+    serverId: string;
+    languageCode: string;
+    recordId: string;
+  }) {
+    setJson(
+      JSON.stringify(
+        {
+          playerId: p.playerId,
+          serverId: p.serverId,
+          languageCode: p.languageCode,
+          recordId: p.recordId,
+        },
+        null,
+        2,
+      ),
+    );
+  }
 
   function parseParams(raw: string): FetchParams {
     let parsed: unknown;
@@ -79,6 +133,93 @@ export default function FetchForm(props: FetchFormProps) {
     }
   }
 
+  async function handleAutoCaptureSniff() {
+    setError("");
+    setStatus("");
+    setSniffing(true);
+
+    let unlisten: UnlistenFn | undefined;
+    let timer: number | undefined;
+    const cleanup = async () => {
+      if (unlisten) unlisten();
+      if (timer !== undefined) clearTimeout(timer);
+      try {
+        await stopSniffer();
+      } catch {
+        // best-effort
+      }
+      setSniffing(false);
+    };
+
+    try {
+      unlisten = await listen<CapturedParams>(EVENT_SNIFFER_PARAMS, (event) => {
+        fillJson(event.payload);
+        setStatus(`已捕获玩家 ${event.payload.playerId} 的参数（抓包）`);
+        cleanup();
+      });
+
+      await startSniffer();
+      setStatus("代理已启动，请打开游戏 → 抽卡 → 历史记录（翻几页以触发请求）");
+
+      timer = window.setTimeout(() => {
+        setError("超时未捕获到请求，已停止代理");
+        cleanup();
+      }, SNIFFER_TIMEOUT_MS);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      await cleanup();
+    }
+  }
+
+  async function pickGameDir(): Promise<string | undefined> {
+    const picked = await openDialog({
+      multiple: false,
+      directory: true,
+      title: "选择鸣潮游戏安装目录（包含 Client 子目录）",
+    });
+    if (!picked || typeof picked !== "string") return undefined;
+    saveGameDir(picked);
+    setGameDir(picked);
+    return picked;
+  }
+
+  async function readFromLog(dir?: string) {
+    setError("");
+    setStatus("");
+    setReadingLog(true);
+    try {
+      const p = await readParamsFromLog({ gameDir: dir });
+      fillJson(p);
+      setStatus(`已从日志读取玩家 ${p.playerId} 的参数（来源：${p.sourcePath}）`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+    } finally {
+      setReadingLog(false);
+    }
+  }
+
+  async function handleReadLog() {
+    let dir = gameDir();
+    if (!dir) {
+      dir = await pickGameDir();
+      if (!dir) return;
+    }
+    await readFromLog(dir);
+  }
+
+  async function handlePickGameDir() {
+    const dir = await pickGameDir();
+    if (!dir) return;
+    await readFromLog(dir);
+  }
+
+  onCleanup(() => {
+    if (sniffing()) {
+      stopSniffer().catch(() => undefined);
+    }
+  });
+
   return (
     <div class="fetch-form">
       <textarea
@@ -87,16 +228,46 @@ export default function FetchForm(props: FetchFormProps) {
         value={json()}
         onInput={(e) => setJson(e.currentTarget.value)}
         rows={6}
-        disabled={loading()}
+        disabled={busy()}
       />
+      {gameDir() && (
+        <p class="fetch-form-hint">已记住游戏目录：{gameDir()}</p>
+      )}
+      {status() && <p class="fetch-form-status">{status()}</p>}
       {error() && <p class="fetch-form-error">{error()}</p>}
-      <button
-        class="btn btn-primary"
-        onClick={handleFetch}
-        disabled={loading() || json().trim() === ""}
-      >
-        {loading() ? "获取中..." : "获取记录"}
-      </button>
+      <div class="fetch-form-actions">
+        <button
+          class="btn btn-secondary"
+          onClick={handleReadLog}
+          disabled={busy()}
+          title="从游戏日志提取抽卡参数"
+        >
+          {readingLog() ? "读取中…" : "从日志获取"}
+        </button>
+        <button
+          class="btn btn-secondary"
+          onClick={handlePickGameDir}
+          disabled={busy()}
+          title="选择鸣潮游戏安装目录"
+        >
+          选择游戏目录…
+        </button>
+        <button
+          class="btn btn-secondary"
+          onClick={handleAutoCaptureSniff}
+          disabled={busy()}
+          title="启动本地 MITM 代理抓取游戏请求（需授权证书）"
+        >
+          {sniffing() ? "监听中…" : "抓包获取"}
+        </button>
+        <button
+          class="btn btn-primary"
+          onClick={handleFetch}
+          disabled={busy() || json().trim() === ""}
+        >
+          {loading() ? "获取中..." : "获取记录"}
+        </button>
+      </div>
     </div>
   );
 }
