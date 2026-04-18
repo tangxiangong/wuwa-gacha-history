@@ -12,6 +12,10 @@ pub struct GachaHistoryResponse {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseRecord {
+    /// Localized pool name (e.g. "角色精准调谐" / "Resonators Accurate Modulation").
+    /// Translated per the request's `languageCode`; do NOT use it to identify
+    /// the pool type — use the numeric `cardPoolType` you sent in the request.
+    pub card_pool_type: String,
     pub resource_id: u32,
     pub quality_level: QualityLevel,
     pub resource_type: String,

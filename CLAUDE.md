@@ -84,4 +84,4 @@ Four `#[tauri::command]` functions bridge frontend to core library. All return `
 
 ## API Reference
 
-See `API.md` for the full gacha record query API documentation including request/response schemas and `cardPoolType` values. The `card_pool_id.json` file maps pool types to their fixed UUIDs (only needed for non-featured pools; featured pools get their IDs from the game URL).
+See `API.md` for the full gacha record query API documentation including request/response schemas and `cardPoolType` values. The `cardPoolId` field is ignored by the server — pass an empty string.

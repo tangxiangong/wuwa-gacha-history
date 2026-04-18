@@ -284,6 +284,7 @@ mod tests {
 
     fn sample_record(name: &str) -> ResponseRecord {
         ResponseRecord {
+            card_pool_type: "角色精准调谐".to_string(),
             quality_level: QualityLevel::FiveStar,
             name: name.to_string(),
             time: NaiveDate::from_ymd_opt(2026, 4, 1)

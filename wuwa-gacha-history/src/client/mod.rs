@@ -25,9 +25,7 @@ impl GachaHistoryClient {
 
     pub async fn fetch_all(&mut self, pool_type: CardPool) -> Result<Vec<ResponseRecord>> {
         self.params.card_pool_type = pool_type;
-        if let Some(pool_id) = pool_type.pool_id() {
-            self.params.card_pool_id = pool_id;
-        }
+        self.params.card_pool_id.clear();
         let response = self.send().await?;
         if response.code != 0 {
             return Err(Error::Api {
