@@ -34,6 +34,18 @@ function App() {
   return (
     <div class="app">
       <Show
+        when={!users.error}
+        fallback={
+          <div class="load-error">
+            <h2>无法加载用户列表</h2>
+            <p>{String(users.error)}</p>
+            <button class="btn btn-primary" onClick={() => refetchUsers()}>
+              重试
+            </button>
+          </div>
+        }
+      >
+      <Show
         when={(users() ?? []).length > 0 && playerId() !== null}
         fallback={
           <Show when={!users.loading}>
@@ -62,6 +74,7 @@ function App() {
           onClose={() => setAddUserOpen(false)}
           onUserAdded={handleUserAdded}
         />
+      </Show>
       </Show>
     </div>
   );
