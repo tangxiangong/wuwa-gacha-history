@@ -69,11 +69,18 @@ async fn ensure_user_table(pool: &SqlitePool, player_id: &str) -> Result<String>
             record_id TEXT NOT NULL UNIQUE,
             quality_level INTEGER NOT NULL,
             name TEXT NOT NULL,
-            time TEXT NOT NULL
+            time TEXT NOT NULL,
+            seq INTEGER NOT NULL DEFAULT 0
         )"
     ))
     .execute(pool)
     .await?;
+
+    let _ = sqlx::query(&format!(
+        "ALTER TABLE {table} ADD COLUMN seq INTEGER NOT NULL DEFAULT 0"
+    ))
+    .execute(pool)
+    .await;
 
     sqlx::query(&format!(
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_{table}_record_id ON {table}(record_id)"
@@ -142,12 +149,16 @@ pub async fn add_records(
 
     let sql = format!(
         "INSERT INTO {table}
-            (server_id, card_pool, language_code, record_id, quality_level, name, time)
-         VALUES (?, ?, ?, ?, ?, ?, ?)"
+            (server_id, card_pool, language_code, record_id, quality_level, name, time, seq)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
 
-    for (idx, record) in records.into_iter().rev().enumerate() {
-        let synthetic_id = format!("{card_pool_int}-{idx}");
+    // Preserve the response's exact ordering. The API returns records with the
+    // game UI's top-first (newest time first, oldest-first within the same
+    // second). seq = index in the response, so ORDER BY seq ASC reproduces
+    // exactly what the player sees in-game.
+    for (seq, record) in records.into_iter().enumerate() {
+        let synthetic_id = format!("{card_pool_int}-{seq}");
         sqlx::query(&sql)
             .bind(server_id)
             .bind(card_pool_int)
@@ -156,6 +167,7 @@ pub async fn add_records(
             .bind(record.quality_level as i32)
             .bind(&record.name)
             .bind(record.time.format("%Y-%m-%dT%H:%M:%S").to_string())
+            .bind(seq as i64)
             .execute(&mut *tx)
             .await?;
     }
@@ -195,7 +207,7 @@ pub async fn query_records(
             .push_bind(time_to.format("%Y-%m-%dT%H:%M:%S").to_string());
     }
 
-    qb.push(" ORDER BY time DESC");
+    qb.push(" ORDER BY time DESC, seq ASC");
 
     if let Some(limit) = filter.limit {
         qb.push(" LIMIT ").push_bind(limit as i64);
@@ -340,6 +352,59 @@ mod tests {
             .unwrap();
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].name, "c");
+    }
+
+    #[tokio::test]
+    async fn query_preserves_response_order_within_same_timestamp() {
+        let path = test_db_path();
+        let player_id = "777777777";
+        let pool = CardPool::FeaturedResonatorConvene;
+        let t = NaiveDate::from_ymd_opt(2026, 3, 19)
+            .unwrap()
+            .and_hms_opt(12, 38, 37)
+            .unwrap();
+
+        let mk = |name: &str| ResponseRecord {
+            card_pool_type: "x".into(),
+            quality_level: QualityLevel::ThreeStar,
+            name: name.into(),
+            time: t,
+            resource_id: 0,
+            resource_type: String::new(),
+            count: 1,
+        };
+
+        // Response order (newest first across times, in-game order within same time):
+        // game shows these 10 items top-to-bottom exactly as returned.
+        let response = vec![
+            mk("item0"),
+            mk("item1"),
+            mk("item2"),
+            mk("item3"),
+            mk("item4"),
+            mk("item5"),
+            mk("item6"),
+            mk("item7"),
+            mk("item8"),
+            mk("item9_5star"),
+        ];
+
+        add_records(&path, player_id, "s", "zh-Hans", pool, response)
+            .await
+            .unwrap();
+
+        let rows = query_records(&path, player_id, &GachaFilter::default())
+            .await
+            .unwrap();
+        let names: Vec<String> = rows.iter().map(|r| r.name.clone()).collect();
+        assert_eq!(
+            names,
+            vec![
+                "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8",
+                "item9_5star",
+            ],
+            "within-same-timestamp order must match response order",
+        );
     }
 
     #[tokio::test]
