@@ -60,9 +60,8 @@ export default function FetchForm(props: FetchFormProps) {
   const [error, setError] = createSignal("");
   const [status, setStatus] = createSignal("");
   const [gameDir, setGameDir] = createSignal<string | undefined>(loadGameDir());
-  const [sniffCleanup, setSniffCleanup] = createSignal<
-    (() => Promise<void>) | null
-  >(null);
+  let activeCleanup: (() => Promise<void>) | null = null;
+  let cancelRequested = false;
 
   const busy = () => loading() || sniffing() || readingLog();
 
@@ -137,25 +136,29 @@ export default function FetchForm(props: FetchFormProps) {
   }
 
   async function handleAutoCaptureSniff() {
-    if (sniffCleanup()) return;
+    if (activeCleanup) return;
     setError("");
     setStatus("");
     setSniffing(true);
+    cancelRequested = false;
 
     let unlisten: UnlistenFn | undefined;
     let timer: number | undefined;
+    let cleaning = false;
     const cleanup = async () => {
+      if (cleaning) return;
+      cleaning = true;
       if (unlisten) unlisten();
       if (timer !== undefined) clearTimeout(timer);
       try {
         await stopSniffer();
-      } catch {
-        // best-effort
+      } catch (e) {
+        console.error("stopSniffer failed", e);
       }
       setSniffing(false);
-      setSniffCleanup(null);
+      activeCleanup = null;
     };
-    setSniffCleanup(() => cleanup);
+    activeCleanup = cleanup;
 
     try {
       unlisten = await listen<CapturedParams>(EVENT_SNIFFER_PARAMS, (event) => {
@@ -165,8 +168,13 @@ export default function FetchForm(props: FetchFormProps) {
       });
 
       await startSniffer();
-      setStatus("代理已启动，请打开游戏 → 抽卡 → 历史记录（翻几页以触发请求）");
 
+      if (cancelRequested) {
+        await cleanup();
+        return;
+      }
+
+      setStatus("代理已启动，请打开游戏 → 抽卡 → 历史记录（翻几页以触发请求）");
       timer = window.setTimeout(() => {
         setError("超时未捕获到请求，已停止代理");
         cleanup();
@@ -178,10 +186,15 @@ export default function FetchForm(props: FetchFormProps) {
   }
 
   async function handleCancelSniff() {
-    const c = sniffCleanup();
-    if (!c) return;
-    setStatus("已取消监听");
+    cancelRequested = true;
+    const c = activeCleanup;
+    if (!c) {
+      setSniffing(false);
+      return;
+    }
+    setStatus("正在停止代理…（macOS 可能再次弹出授权）");
     await c();
+    setStatus("已取消监听");
   }
 
   async function pickGameDir(): Promise<string | undefined> {
@@ -228,8 +241,8 @@ export default function FetchForm(props: FetchFormProps) {
   }
 
   onCleanup(() => {
-    if (sniffing()) {
-      stopSniffer().catch(() => undefined);
+    if (activeCleanup) {
+      activeCleanup().catch(() => undefined);
     }
   });
 
