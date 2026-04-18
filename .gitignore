@@ -9,6 +9,7 @@ dist
 # will have schema files for capabilities auto-completion
 src-tauri/gen/schemas
 **/*.sqlite
+/wiki-art/
 .claude/settings.local.json
 .superpowers/
 .worktrees/
