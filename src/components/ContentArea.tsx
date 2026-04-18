@@ -10,7 +10,7 @@ const PAGE_SIZE = 20;
 
 interface ContentAreaProps {
   activePool: CardPool | null;
-  userId: string;
+  playerId: string;
 }
 
 export default function ContentArea(props: ContentAreaProps) {
@@ -47,16 +47,16 @@ export default function ContentArea(props: ContentAreaProps) {
   }
 
   async function loadRecords() {
-    if (!props.activePool || !props.userId) return;
+    if (!props.activePool || !props.playerId) return;
     setLoading(true);
     try {
       const filter = buildFilter();
-      const result = await queryGachaRecords(props.userId, filter);
+      const result = await queryGachaRecords(props.playerId, filter);
       setRecords(result);
 
       // Fetch total count (without limit/offset) for pagination
       const countFilter = { ...filter, limit: null, offset: null };
-      const allResults = await queryGachaRecords(props.userId, countFilter);
+      const allResults = await queryGachaRecords(props.playerId, countFilter);
       setTotalRecords(allResults.length);
     } catch (e) {
       console.error("Failed to query records:", e);
@@ -67,11 +67,12 @@ export default function ContentArea(props: ContentAreaProps) {
     }
   }
 
-  // Reset page and reload when pool or filters change
+  // Reset page and reload when user, pool, or filters change
   createEffect(
     on(
       () => [
         props.activePool,
+        props.playerId,
         qualityLevel(),
         nameQuery(),
         timeFrom(),

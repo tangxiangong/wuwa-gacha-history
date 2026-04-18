@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use tauri::Manager;
 use wuwa_gacha_history::{
-    add_records, export_to_file, query_records, CardPool, GachaFilter, GachaHistoryClient,
-    GachaRecord, RequestParams,
+    add_records, export_to_file, list_users as list_users_impl, query_records, CardPool,
+    GachaFilter, GachaHistoryClient, GachaRecord, RequestParams,
 };
 
 #[derive(Debug, Clone, Deserialize)]
@@ -65,11 +65,11 @@ async fn fetch_gacha_records(
 #[tauri::command]
 async fn query_gacha_records(
     app: tauri::AppHandle,
-    user_id: String,
+    player_id: String,
     filter: GachaFilter,
 ) -> Result<Vec<GachaRecord>, String> {
     let db_path = db_path(&app)?;
-    let records = query_records(&db_path, &user_id, &filter)
+    let records = query_records(&db_path, &player_id, &filter)
         .await
         .map_err(|e| e.to_string())?;
     Ok(records)
@@ -78,16 +78,22 @@ async fn query_gacha_records(
 #[tauri::command]
 async fn export_gacha_records(
     app: tauri::AppHandle,
-    user_id: String,
+    player_id: String,
     filter: GachaFilter,
     path: String,
 ) -> Result<(), String> {
     let db_path = db_path(&app)?;
-    let records = query_records(&db_path, &user_id, &filter)
+    let records = query_records(&db_path, &player_id, &filter)
         .await
         .map_err(|e| e.to_string())?;
     export_to_file(&records, &path).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+async fn list_users(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+    let db_path = db_path(&app)?;
+    list_users_impl(&db_path).await.map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -99,6 +105,7 @@ pub fn run() {
             fetch_gacha_records,
             query_gacha_records,
             export_gacha_records,
+            list_users,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

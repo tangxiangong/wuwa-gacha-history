@@ -47,24 +47,28 @@ cargo check --workspace
 - **`client/utils.rs`** — `CardPool` enum mapping the 7 convene/banner types (featured resonator/weapon, standard, novice, etc.) to their fixed UUIDs.
 - **`client/response.rs`** — Response deserialization types. `QualityLevel` (3/4/5 star) uses `serde_repr` for integer enum deserialization.
 - **`client/request.rs`** — `RequestParams` serialized as camelCase JSON for the API.
-- **`db.rs`** — SQLite persistence via `sqlx` with raw SQL queries. Uses a global `OnceCell<SqlitePool>` singleton. `GachaRecord` struct (table "gacha") with fields: id, user_id, server_id, card_pool, language_code, record_id (UNIQUE), quality_level, name, time. Dynamic query building via `sqlx::QueryBuilder`. `GachaFilter` supports: card_pool, quality_level, name, time_from, time_to, limit, offset.
+- **`db.rs`** — SQLite persistence via `sqlx` with raw SQL queries. Uses a global `OnceCell<SqlitePool>` singleton. Records are stored in per-user tables named `gacha_{player_id}` where `player_id` is validated as exactly 9 ASCII digits (`validate_player_id`) before interpolation into SQL — SQL-injection defense. `ensure_user_table` creates the table + unique `record_id` index on demand. `GachaRecord` fields: id, server_id, card_pool, language_code, record_id (UNIQUE), quality_level, name, time. `list_users` enumerates `sqlite_master` for tables matching `gacha_<9-digit-id>` and returns the id list. Dynamic query building via `sqlx::QueryBuilder`. `GachaFilter` supports: card_pool, quality_level, name, time_from, time_to, limit, offset.
 - **`export.rs`** — File export via `export_to_file()` which detects format from extension. Supports CSV (`csv` crate), XLSX (`rust_xlsxwriter`), and JSON. Headers are Chinese: 时间, 名称, 星级, 卡池类型.
 - **`error.rs`** — `Error` enum via `thiserror` with variants: Http, Db, Api, Io, Csv, Xlsx, Json, Other. Custom `Result<T>` type alias.
 
 ### Tauri Commands (`src-tauri/src/lib.rs`)
 
-Three `#[tauri::command]` functions bridge frontend to core library. All return `Result<T, String>` (errors stringified for IPC):
+Four `#[tauri::command]` functions bridge frontend to core library. All return `Result<T, String>` (errors stringified for IPC):
 
 - **`fetch_gacha_records(params, pool_types)`** — Fetches from game API for each pool type, stores in DB. Returns total record count.
-- **`query_gacha_records(user_id, filter)`** — Queries DB with `GachaFilter`. Returns `Vec<GachaRecord>`.
-- **`export_gacha_records(user_id, filter, path)`** — Queries DB then writes to file (format from extension).
+- **`query_gacha_records(player_id, filter)`** — Queries the user's `gacha_{player_id}` table with `GachaFilter`. Returns `Vec<GachaRecord>`.
+- **`export_gacha_records(player_id, filter, path)`** — Queries the user's table then writes to file (format from extension).
+- **`list_users()`** — Returns `Vec<String>` of known player IDs by scanning `sqlite_master` for `gacha_<9-digit-id>` tables.
 
 ### Frontend (`src/`)
 
 - **`src/lib/types.ts`** — TypeScript mirrors of Rust types: `CardPool` enum (1–7), `QualityLevel` enum (3/4/5), `GachaRecord`, `GachaFilter`, `FetchParams`. `CARD_POOL_LABELS` maps pool types to Chinese names.
-- **`src/lib/commands.ts`** — Typed wrappers around `invoke()` for the three Tauri commands.
-- **`src/App.tsx`** — Root layout: Sidebar + ContentArea + ExportDialog. Tracks `activePool` and export dialog state.
-- **`src/components/Sidebar.tsx`** — Left nav (160px) with 7 pool type items in 3 groups (限定池, 常驻池, 其他). Footer has export button.
+- **`src/lib/commands.ts`** — Typed wrappers around `invoke()` for the four Tauri commands (including `listUsers`).
+- **`src/App.tsx`** — Root layout. Loads user list via `createResource(listUsers)`; when empty, renders `WelcomePage`; otherwise renders `Sidebar + ContentArea + ExportDialog + AddUserDialog`. Tracks `activePool`, `playerId`, `exportOpen`, `addUserOpen`.
+- **`src/components/FetchForm.tsx`** — Shared JSON-paste form. Parses + validates `playerId/serverId/languageCode/recordId`, calls `fetchGachaRecords` across all 7 pools, fires `onSuccess(playerId)`.
+- **`src/components/WelcomePage.tsx`** — Empty-state page wrapping `FetchForm`.
+- **`src/components/AddUserDialog.tsx`** — Modal wrapping `FetchForm`. Opened from the sidebar.
+- **`src/components/Sidebar.tsx`** — Left nav (160px). Top: user selector `<select>` over known player IDs. Middle: 7 pool-type items in 3 groups (限定池, 常驻池, 其他). Footer: "添加用户" + "导出" buttons.
 - **`src/components/ContentArea.tsx`** — Main panel. Manages records, loading, pagination (PAGE_SIZE=20), and filter state (quality, name, time range). Re-fetches on pool/filter/page changes via SolidJS effects.
 - **`src/components/FilterPanel.tsx`** — Collapsible filter: quality chips (5★/4★/3★), name search, date range.
 - **`src/components/RecordTable.tsx`** — Table with columns: 名称, 星级, 时间. Rows styled by quality (star-5/4/3 CSS classes).

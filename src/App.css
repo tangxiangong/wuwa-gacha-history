@@ -417,3 +417,117 @@
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
+
+/* ===== Fetch form ===== */
+.fetch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fetch-form-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.fetch-form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.fetch-form-error {
+  color: var(--star-5);
+  font-size: 12px;
+}
+
+/* ===== Welcome page ===== */
+.welcome-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.welcome-card {
+  max-width: 520px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.welcome-card h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.welcome-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ===== User selector ===== */
+.user-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.user-selector-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.user-selector-input {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.user-selector-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ===== Load error ===== */
+.load-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.load-error h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.load-error p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 420px;
+}
