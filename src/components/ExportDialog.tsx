@@ -5,7 +5,7 @@ import type { GachaFilter } from "../lib/types";
 
 interface ExportDialogProps {
   open: boolean;
-  userId: string;
+  playerId: string;
   filter: GachaFilter;
   onClose: () => void;
 }
@@ -41,7 +41,7 @@ export default function ExportDialog(props: ExportDialogProps) {
 
     setExporting(true);
     try {
-      await exportGachaRecords(props.userId, props.filter, filePath);
+      await exportGachaRecords(props.playerId, props.filter, filePath);
       props.onClose();
     } catch (e) {
       setError(String(e));
