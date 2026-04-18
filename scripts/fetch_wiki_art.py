@@ -12,9 +12,12 @@ returns a misleading 500). The relevant portrait URL for each entry lives
 at `content.contentUrl`, and the display name at `name`.
 
 Usage:
-  python3 scripts/fetch_wiki_art.py                # -> ./wiki-art/
+  python3 scripts/fetch_wiki_art.py                # -> ./public/wiki-art/
   python3 scripts/fetch_wiki_art.py ./out          # custom dir
   python3 scripts/fetch_wiki_art.py --only weapons # one category
+
+Default output lives under public/ so Vite serves the portraits as
+static assets at /wiki-art/<name>.png without bundling them.
 """
 
 from __future__ import annotations
@@ -149,7 +152,12 @@ def run(out_dir: Path, only: str | None, concurrency: int) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("out", nargs="?", default="wiki-art", help="output directory (default: ./wiki-art)")
+    parser.add_argument(
+        "out",
+        nargs="?",
+        default="public/wiki-art",
+        help="output directory (default: ./public/wiki-art)",
+    )
     parser.add_argument("--only", choices=list(CATALOGUES.keys()), help="fetch one category only")
     parser.add_argument("-j", "--jobs", type=int, default=8, help="parallel downloads (default: 8)")
     args = parser.parse_args()
