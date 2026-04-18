@@ -6,6 +6,19 @@ use tokio::sync::OnceCell;
 
 static DB: OnceCell<SqlitePool> = OnceCell::const_new();
 
+pub fn validate_player_id(player_id: &str) -> Result<()> {
+    if player_id.len() == 9 && player_id.bytes().all(|b| b.is_ascii_digit()) {
+        Ok(())
+    } else {
+        Err(crate::Error::Other("invalid player_id".to_string()))
+    }
+}
+
+fn user_table(player_id: &str) -> Result<String> {
+    validate_player_id(player_id)?;
+    Ok(format!("gacha_{player_id}"))
+}
+
 async fn pool(path: &str) -> Result<&'static SqlitePool> {
     DB.get_or_try_init(|| async {
         let pool = init(path).await?;
@@ -182,4 +195,40 @@ pub async fn query_records(
 
     let rows = qb.build().fetch_all(pool).await?;
     rows.iter().map(record_from_row).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_player_id_accepts_9_digits() {
+        assert!(validate_player_id("123456789").is_ok());
+        assert!(validate_player_id("000000000").is_ok());
+    }
+
+    #[test]
+    fn validate_player_id_rejects_wrong_length() {
+        assert!(validate_player_id("12345678").is_err());
+        assert!(validate_player_id("1234567890").is_err());
+        assert!(validate_player_id("").is_err());
+    }
+
+    #[test]
+    fn validate_player_id_rejects_non_digits() {
+        assert!(validate_player_id("12345678a").is_err());
+        assert!(validate_player_id("123 45678").is_err());
+        assert!(validate_player_id("12345678;").is_err());
+        assert!(validate_player_id("12345678'").is_err());
+    }
+
+    #[test]
+    fn user_table_returns_prefixed_name() {
+        assert_eq!(user_table("123456789").unwrap(), "gacha_123456789");
+    }
+
+    #[test]
+    fn user_table_rejects_invalid_id() {
+        assert!(user_table("bad").is_err());
+    }
 }
