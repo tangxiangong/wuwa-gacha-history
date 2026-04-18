@@ -478,3 +478,33 @@
   color: var(--text-secondary);
   line-height: 1.6;
 }
+
+/* ===== User selector ===== */
+.user-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.user-selector-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.user-selector-input {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.user-selector-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
