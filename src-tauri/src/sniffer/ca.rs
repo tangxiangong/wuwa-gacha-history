@@ -77,32 +77,47 @@ fn generate_ca() -> Result<(String, String), String> {
 #[cfg(target_os = "macos")]
 pub async fn install_to_system_trust(cert_path: &Path) -> Result<(), String> {
     use tokio::process::Command;
-    let home = std::env::var("HOME").map_err(|_| "HOME not set".to_string())?;
-    let keychain = format!("{home}/Library/Keychains/login.keychain-db");
     let cert = cert_path.to_string_lossy().to_string();
-    let output = Command::new("security")
-        .args([
-            "add-trusted-cert",
-            "-r",
-            "trustAsRoot",
-            "-k",
-            &keychain,
-            &cert,
-        ])
-        .output()
-        .await
-        .map_err(|e| format!("无法调用 security: {e}"))?;
 
-    if output.status.success() {
-        return Ok(());
+    let login_keychain = resolve_login_keychain().await;
+    let mut attempts: Vec<Vec<String>> = Vec::new();
+    attempts.push(vec![
+        "add-trusted-cert".into(),
+        "-r".into(),
+        "trustRoot".into(),
+        cert.clone(),
+    ]);
+    if let Some(ref kc) = login_keychain {
+        attempts.push(vec![
+            "add-trusted-cert".into(),
+            "-r".into(),
+            "trustRoot".into(),
+            "-k".into(),
+            kc.clone(),
+            cert.clone(),
+        ]);
     }
 
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let combined = format!("{stderr}{stdout}").trim().to_string();
+    let mut last_err = String::new();
+    for args in &attempts {
+        let output = Command::new("security")
+            .args(args)
+            .output()
+            .await
+            .map_err(|e| format!("无法调用 security: {e}"))?;
 
-    if combined.contains("already") && combined.contains("trust") {
-        return Ok(());
+        if output.status.success() {
+            return Ok(());
+        }
+
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let combined = format!("{stderr}{stdout}").trim().to_string();
+
+        if combined.contains("already") && combined.contains("trust") {
+            return Ok(());
+        }
+        last_err = combined;
     }
 
     let _ = Command::new("open")
@@ -111,8 +126,26 @@ pub async fn install_to_system_trust(cert_path: &Path) -> Result<(), String> {
         .await;
 
     Err(format!(
-        "自动安装证书失败：{combined}\n已用钥匙串访问打开证书文件，请双击该证书并在「信任」里将 \"Secure Sockets Layer (SSL)\" 改为「始终信任」，然后重新点击抓包。"
+        "自动安装证书失败：{last_err}\n已用钥匙串访问打开证书文件，请双击该证书并在「信任」里将 \"Secure Sockets Layer (SSL)\" 改为「始终信任」，然后重新点击抓包。"
     ))
+}
+
+#[cfg(target_os = "macos")]
+async fn resolve_login_keychain() -> Option<String> {
+    use tokio::process::Command;
+    let out = Command::new("security")
+        .args(["default-keychain", "-d", "user"])
+        .output()
+        .await
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = String::from_utf8_lossy(&out.stdout);
+    s.lines()
+        .next()
+        .map(|l| l.trim().trim_matches('"').to_string())
+        .filter(|s| !s.is_empty())
 }
 
 #[cfg(target_os = "windows")]
