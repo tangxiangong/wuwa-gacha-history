@@ -352,5 +352,22 @@ mod tests {
         let users = list_users(&path).await.unwrap();
         assert!(users.contains(&"333333333".to_string()));
         assert!(users.contains(&"444444444".to_string()));
+        for id in &users {
+            assert!(validate_player_id(id).is_ok(), "leaked invalid id: {id}");
+        }
+    }
+
+    #[tokio::test]
+    async fn list_users_filters_invalid_table_names() {
+        let path = test_db_path();
+        let pool = pool(&path).await.unwrap();
+
+        sqlx::query("CREATE TABLE IF NOT EXISTS gacha_foobar (id INTEGER)")
+            .execute(pool)
+            .await
+            .unwrap();
+
+        let users = list_users(&path).await.unwrap();
+        assert!(!users.contains(&"foobar".to_string()));
     }
 }
