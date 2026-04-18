@@ -6,7 +6,6 @@ use hudsucker::{
 use serde::Deserialize;
 use tokio::sync::mpsc;
 
-pub const TARGET_HOST: &str = "aki-game2.com";
 pub const TARGET_PATH: &str = "/gacha/record/query";
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -41,12 +40,14 @@ impl Interceptor {
     }
 }
 
+fn host_matches(host: &str) -> bool {
+    let h = host.to_ascii_lowercase();
+    h.ends_with(".aki-game2.com") || h.ends_with(".aki-game2.net")
+}
+
 impl HttpHandler for Interceptor {
     async fn should_intercept(&mut self, _ctx: &HttpContext, req: &Request<Body>) -> bool {
-        req.uri()
-            .host()
-            .map(|h| h.eq_ignore_ascii_case(TARGET_HOST) || h.ends_with(".aki-game2.com"))
-            .unwrap_or(false)
+        req.uri().host().map(host_matches).unwrap_or(false)
     }
 
     async fn handle_request(
@@ -54,11 +55,7 @@ impl HttpHandler for Interceptor {
         _ctx: &HttpContext,
         req: Request<Body>,
     ) -> RequestOrResponse {
-        let is_target = req
-            .uri()
-            .host()
-            .map(|h| h.eq_ignore_ascii_case(TARGET_HOST))
-            .unwrap_or(false)
+        let is_target = req.uri().host().map(host_matches).unwrap_or(false)
             && req.uri().path() == TARGET_PATH;
 
         if !is_target {
@@ -94,5 +91,24 @@ impl HttpHandler for Interceptor {
         res: Response<Body>,
     ) -> Response<Body> {
         res
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::host_matches;
+
+    #[test]
+    fn matches_real_hosts() {
+        assert!(host_matches("gmserver-api.aki-game2.com"));
+        assert!(host_matches("gmserver-api.aki-game2.net"));
+        assert!(host_matches("GMSERVER-API.AKI-GAME2.COM"));
+    }
+
+    #[test]
+    fn rejects_unrelated() {
+        assert!(!host_matches("aki-game2.com"));
+        assert!(!host_matches("evil.example.com"));
+        assert!(!host_matches("aki-game.com"));
     }
 }

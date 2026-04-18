@@ -9,7 +9,7 @@ pub use utils::*;
 use crate::{Error, Result};
 use reqwest::{Client, ClientBuilder};
 
-const API_URL: &str = "https://aki-game2.com/gacha/record/query";
+const API_URL: &str = "https://gmserver-api.aki-game2.com/gacha/record/query";
 
 #[derive(Debug, Clone)]
 pub struct GachaHistoryClient {
