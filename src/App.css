@@ -446,3 +446,35 @@
   color: var(--star-5);
   font-size: 12px;
 }
+
+/* ===== Welcome page ===== */
+.welcome-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.welcome-card {
+  max-width: 520px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.welcome-card h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.welcome-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
