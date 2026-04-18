@@ -21,7 +21,7 @@ const REQUIRED_FIELDS: (keyof FetchParams)[] = [
 ];
 
 interface FetchFormProps {
-  onSuccess: (playerId: string) => void;
+  onSuccess: (playerId: string) => void | Promise<void>;
 }
 
 export default function FetchForm(props: FetchFormProps) {
@@ -71,7 +71,7 @@ export default function FetchForm(props: FetchFormProps) {
     setLoading(true);
     try {
       await fetchGachaRecords(params, ALL_POOLS);
-      props.onSuccess(params.playerId);
+      await props.onSuccess(params.playerId);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
