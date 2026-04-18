@@ -220,6 +220,11 @@ mod tests {
         assert!(validate_player_id("123 45678").is_err());
         assert!(validate_player_id("12345678;").is_err());
         assert!(validate_player_id("12345678'").is_err());
+        // Regression-safety: reject control chars and unicode digits
+        assert!(validate_player_id("12345678\n").is_err());
+        assert!(validate_player_id("12345678\0").is_err());
+        assert!(validate_player_id("\u{FF10}2345678").is_err()); // fullwidth 0
+        assert!(validate_player_id("١٢٣٤٥٦٧٨٩").is_err()); // Arabic-Indic digits
     }
 
     #[test]
