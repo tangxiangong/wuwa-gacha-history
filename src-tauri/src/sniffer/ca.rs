@@ -80,7 +80,7 @@ pub async fn install_to_system_trust(cert_path: &Path) -> Result<(), String> {
     let home = std::env::var("HOME").map_err(|_| "HOME not set".to_string())?;
     let keychain = format!("{home}/Library/Keychains/login.keychain-db");
     let cert = cert_path.to_string_lossy().to_string();
-    let status = Command::new("security")
+    let output = Command::new("security")
         .args([
             "add-trusted-cert",
             "-r",
@@ -89,28 +89,53 @@ pub async fn install_to_system_trust(cert_path: &Path) -> Result<(), String> {
             &keychain,
             &cert,
         ])
-        .status()
+        .output()
         .await
-        .map_err(|e| e.to_string())?;
-    if !status.success() {
-        return Err("security add-trusted-cert failed (user may have cancelled)".into());
+        .map_err(|e| format!("无法调用 security: {e}"))?;
+
+    if output.status.success() {
+        return Ok(());
     }
-    Ok(())
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let combined = format!("{stderr}{stdout}").trim().to_string();
+
+    if combined.contains("already") && combined.contains("trust") {
+        return Ok(());
+    }
+
+    let _ = Command::new("open")
+        .args(["-a", "Keychain Access", &cert])
+        .status()
+        .await;
+
+    Err(format!(
+        "自动安装证书失败：{combined}\n已用钥匙串访问打开证书文件，请双击该证书并在「信任」里将 \"Secure Sockets Layer (SSL)\" 改为「始终信任」，然后重新点击抓包。"
+    ))
 }
 
 #[cfg(target_os = "windows")]
 pub async fn install_to_system_trust(cert_path: &Path) -> Result<(), String> {
     use tokio::process::Command;
     let cert = cert_path.to_string_lossy().to_string();
-    let status = Command::new("certutil")
+    let output = Command::new("certutil")
         .args(["-user", "-addstore", "Root", &cert])
-        .status()
+        .output()
         .await
-        .map_err(|e| e.to_string())?;
-    if !status.success() {
-        return Err("certutil -addstore failed".into());
+        .map_err(|e| format!("无法调用 certutil: {e}"))?;
+
+    if output.status.success() {
+        return Ok(());
     }
-    Ok(())
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Err(format!(
+        "certutil -addstore Root 失败：{}{}",
+        stderr.trim(),
+        stdout.trim()
+    ))
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "windows")))]
