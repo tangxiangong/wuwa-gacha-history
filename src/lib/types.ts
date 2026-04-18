@@ -26,7 +26,6 @@ export enum QualityLevel {
 
 export interface GachaRecord {
   id: number;
-  userId: string;
   serverId: string;
   cardPool: CardPool;
   languageCode: string;
