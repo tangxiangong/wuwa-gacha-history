@@ -60,6 +60,9 @@ export default function FetchForm(props: FetchFormProps) {
   const [error, setError] = createSignal("");
   const [status, setStatus] = createSignal("");
   const [gameDir, setGameDir] = createSignal<string | undefined>(loadGameDir());
+  const [sniffCleanup, setSniffCleanup] = createSignal<
+    (() => Promise<void>) | null
+  >(null);
 
   const busy = () => loading() || sniffing() || readingLog();
 
@@ -134,6 +137,7 @@ export default function FetchForm(props: FetchFormProps) {
   }
 
   async function handleAutoCaptureSniff() {
+    if (sniffCleanup()) return;
     setError("");
     setStatus("");
     setSniffing(true);
@@ -149,7 +153,9 @@ export default function FetchForm(props: FetchFormProps) {
         // best-effort
       }
       setSniffing(false);
+      setSniffCleanup(null);
     };
+    setSniffCleanup(() => cleanup);
 
     try {
       unlisten = await listen<CapturedParams>(EVENT_SNIFFER_PARAMS, (event) => {
@@ -169,6 +175,13 @@ export default function FetchForm(props: FetchFormProps) {
       setError(e instanceof Error ? e.message : String(e));
       await cleanup();
     }
+  }
+
+  async function handleCancelSniff() {
+    const c = sniffCleanup();
+    if (!c) return;
+    setStatus("已取消监听");
+    await c();
   }
 
   async function pickGameDir(): Promise<string | undefined> {
@@ -254,11 +267,15 @@ export default function FetchForm(props: FetchFormProps) {
         </button>
         <button
           class="btn btn-secondary"
-          onClick={handleAutoCaptureSniff}
-          disabled={busy()}
-          title="启动本地 MITM 代理抓取游戏请求（需授权证书）"
+          onClick={sniffing() ? handleCancelSniff : handleAutoCaptureSniff}
+          disabled={loading() || readingLog()}
+          title={
+            sniffing()
+              ? "停止抓包并还原系统代理"
+              : "启动本地 MITM 代理抓取游戏请求（需授权证书）"
+          }
         >
-          {sniffing() ? "监听中…" : "抓包获取"}
+          {sniffing() ? "取消监听" : "抓包获取"}
         </button>
         <button
           class="btn btn-primary"
