@@ -4,12 +4,12 @@ import FetchForm from "./FetchForm";
 interface AddUserDialogProps {
   open: boolean;
   onClose: () => void;
-  onUserAdded: (playerId: string) => void;
+  onUserAdded: (playerId: string) => void | Promise<void>;
 }
 
 export default function AddUserDialog(props: AddUserDialogProps) {
-  function handleSuccess(playerId: string) {
-    props.onUserAdded(playerId);
+  async function handleSuccess(playerId: string) {
+    await props.onUserAdded(playerId);
     props.onClose();
   }
 

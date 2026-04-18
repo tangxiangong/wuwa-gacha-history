@@ -1,7 +1,7 @@
 import FetchForm from "./FetchForm";
 
 interface WelcomePageProps {
-  onUserAdded: (playerId: string) => void;
+  onUserAdded: (playerId: string) => void | Promise<void>;
 }
 
 export default function WelcomePage(props: WelcomePageProps) {

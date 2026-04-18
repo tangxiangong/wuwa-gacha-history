@@ -67,11 +67,12 @@ export default function ContentArea(props: ContentAreaProps) {
     }
   }
 
-  // Reset page and reload when pool or filters change
+  // Reset page and reload when user, pool, or filters change
   createEffect(
     on(
       () => [
         props.activePool,
+        props.playerId,
         qualityLevel(),
         nameQuery(),
         timeFrom(),
