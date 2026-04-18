@@ -1,19 +1,17 @@
-use crate::CardPool;
 use chrono::NaiveDateTime;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GachaHistoryResponse {
-    pub code: u32,
+    pub code: i32,
     pub message: String,
+    #[serde(default)]
     pub data: Vec<ResponseRecord>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseRecord {
-    pub id: String,
-    pub card_pool_type: CardPool,
     pub resource_id: u32,
     pub quality_level: QualityLevel,
     pub resource_type: String,

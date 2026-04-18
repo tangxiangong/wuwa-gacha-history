@@ -23,13 +23,7 @@ impl GachaHistoryClient {
         Ok(Self { params, client })
     }
 
-    pub async fn fetch(
-        &mut self,
-        pool_type: CardPool,
-        last_id: Option<String>,
-    ) -> Result<(Option<String>, Vec<ResponseRecord>)> {
-        self.params.size = 20;
-        self.params.last_id = last_id;
+    pub async fn fetch_all(&mut self, pool_type: CardPool) -> Result<Vec<ResponseRecord>> {
         self.params.card_pool_type = pool_type;
         if let Some(pool_id) = pool_type.pool_id() {
             self.params.card_pool_id = pool_id;
@@ -41,28 +35,7 @@ impl GachaHistoryClient {
                 message: response.message,
             });
         }
-        let last_id = response.data.last().map(|record| record.id.clone());
-        Ok((last_id, response.data))
-    }
-
-    pub async fn fetch_all(&mut self, pool_type: CardPool) -> Result<Vec<ResponseRecord>> {
-        let mut all_records = Vec::new();
-        let mut last_id = None;
-
-        loop {
-            let (new_last_id, records) = self.fetch(pool_type, last_id).await?;
-            let count = records.len();
-            all_records.extend(records);
-
-            if count < 20 {
-                break;
-            }
-
-            last_id = new_last_id;
-            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-        }
-
-        Ok(all_records)
+        Ok(response.data)
     }
 
     async fn send(&self) -> Result<GachaHistoryResponse> {

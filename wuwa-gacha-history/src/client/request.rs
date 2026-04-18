@@ -10,6 +10,4 @@ pub struct RequestParams {
     pub card_pool_type: CardPool,
     pub language_code: String,
     pub record_id: String,
-    pub size: u8,
-    pub last_id: Option<String>,
 }

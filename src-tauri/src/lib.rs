@@ -42,8 +42,6 @@ async fn fetch_gacha_records(
         card_pool_type: CardPool::FeaturedResonatorConvene,
         language_code: params.language_code.clone(),
         record_id: params.record_id,
-        size: 20,
-        last_id: None,
     };
 
     let mut client = GachaHistoryClient::new(request_params).map_err(|e| e.to_string())?;
@@ -60,6 +58,7 @@ async fn fetch_gacha_records(
             &params.player_id,
             &params.server_id,
             &params.language_code,
+            pool_type,
             records,
         )
         .await

@@ -126,24 +126,33 @@ pub async fn add_records(
     player_id: &str,
     server_id: &str,
     language_code: &str,
+    card_pool: CardPool,
     records: Vec<ResponseRecord>,
 ) -> Result<()> {
     let pool = pool(path).await?;
     let table = ensure_user_table(pool, player_id).await?;
     let mut tx = pool.begin().await?;
 
+    let card_pool_int = card_pool as i32;
+
+    sqlx::query(&format!("DELETE FROM {table} WHERE card_pool = ?"))
+        .bind(card_pool_int)
+        .execute(&mut *tx)
+        .await?;
+
     let sql = format!(
-        "INSERT OR IGNORE INTO {table}
+        "INSERT INTO {table}
             (server_id, card_pool, language_code, record_id, quality_level, name, time)
          VALUES (?, ?, ?, ?, ?, ?, ?)"
     );
 
-    for record in records {
+    for (idx, record) in records.into_iter().rev().enumerate() {
+        let synthetic_id = format!("{card_pool_int}-{idx}");
         sqlx::query(&sql)
             .bind(server_id)
-            .bind(record.card_pool_type as i32)
+            .bind(card_pool_int)
             .bind(language_code)
-            .bind(&record.id)
+            .bind(&synthetic_id)
             .bind(record.quality_level as i32)
             .bind(&record.name)
             .bind(record.time.format("%Y-%m-%dT%H:%M:%S").to_string())
@@ -273,12 +282,10 @@ mod tests {
     use crate::{CardPool, QualityLevel, ResponseRecord};
     use chrono::NaiveDate;
 
-    fn sample_record(id: &str) -> ResponseRecord {
+    fn sample_record(name: &str) -> ResponseRecord {
         ResponseRecord {
-            card_pool_type: CardPool::FeaturedResonatorConvene,
-            id: id.to_string(),
             quality_level: QualityLevel::FiveStar,
-            name: "安可".to_string(),
+            name: name.to_string(),
             time: NaiveDate::from_ymd_opt(2026, 4, 1)
                 .unwrap()
                 .and_hms_opt(12, 0, 0)
@@ -299,7 +306,8 @@ mod tests {
             player_id,
             "76402e5b",
             "zh-Hans",
-            vec![sample_record("r1")],
+            CardPool::FeaturedResonatorConvene,
+            vec![sample_record("安可")],
         )
         .await
         .unwrap();
@@ -308,27 +316,74 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(records.len(), 1);
-        assert_eq!(records[0].record_id, "r1");
         assert_eq!(records[0].name, "安可");
+    }
+
+    #[tokio::test]
+    async fn add_records_replaces_previous_pool_data() {
+        let path = test_db_path();
+        let player_id = "555555555";
+        let pool = CardPool::FeaturedResonatorConvene;
+
+        add_records(
+            &path, player_id, "s", "zh-Hans", pool,
+            vec![sample_record("a"), sample_record("b")],
+        ).await.unwrap();
+        add_records(
+            &path, player_id, "s", "zh-Hans", pool,
+            vec![sample_record("c")],
+        ).await.unwrap();
+
+        let rows = query_records(&path, player_id, &GachaFilter::default())
+            .await
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].name, "c");
+    }
+
+    #[tokio::test]
+    async fn add_records_scopes_wipe_to_single_pool() {
+        let path = test_db_path();
+        let player_id = "666666666";
+
+        add_records(
+            &path, player_id, "s", "zh-Hans",
+            CardPool::FeaturedResonatorConvene,
+            vec![sample_record("r")],
+        ).await.unwrap();
+        add_records(
+            &path, player_id, "s", "zh-Hans",
+            CardPool::StandardWeaponConvene,
+            vec![sample_record("w")],
+        ).await.unwrap();
+
+        let rows = query_records(&path, player_id, &GachaFilter::default())
+            .await
+            .unwrap();
+        assert_eq!(rows.len(), 2);
     }
 
     #[tokio::test]
     async fn add_records_rejects_invalid_player_id() {
         let path = test_db_path();
-        let err = add_records(&path, "bad", "s", "zh-Hans", vec![])
-            .await
-            .unwrap_err();
+        let err = add_records(
+            &path, "bad", "s", "zh-Hans",
+            CardPool::FeaturedResonatorConvene, vec![],
+        )
+        .await
+        .unwrap_err();
         assert!(matches!(err, crate::Error::Other(_)));
     }
 
     #[tokio::test]
     async fn query_records_isolates_users() {
         let path = test_db_path();
+        let pool = CardPool::FeaturedResonatorConvene;
 
-        add_records(&path, "111111111", "s", "zh-Hans", vec![sample_record("a")])
+        add_records(&path, "111111111", "s", "zh-Hans", pool, vec![sample_record("a")])
             .await
             .unwrap();
-        add_records(&path, "222222222", "s", "zh-Hans", vec![sample_record("b")])
+        add_records(&path, "222222222", "s", "zh-Hans", pool, vec![sample_record("b")])
             .await
             .unwrap();
 
@@ -339,19 +394,20 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(r1.len(), 1);
-        assert_eq!(r1[0].record_id, "a");
+        assert_eq!(r1[0].name, "a");
         assert_eq!(r2.len(), 1);
-        assert_eq!(r2[0].record_id, "b");
+        assert_eq!(r2[0].name, "b");
     }
 
     #[tokio::test]
     async fn list_users_returns_player_ids() {
         let path = test_db_path();
+        let pool = CardPool::FeaturedResonatorConvene;
 
-        add_records(&path, "333333333", "s", "zh-Hans", vec![])
+        add_records(&path, "333333333", "s", "zh-Hans", pool, vec![])
             .await
             .unwrap();
-        add_records(&path, "444444444", "s", "zh-Hans", vec![])
+        add_records(&path, "444444444", "s", "zh-Hans", pool, vec![])
             .await
             .unwrap();
 

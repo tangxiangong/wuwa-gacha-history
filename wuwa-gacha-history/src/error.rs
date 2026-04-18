@@ -11,7 +11,7 @@ pub enum Error {
     Db(#[from] sqlx::Error),
 
     #[error("API error (code {code}): {message}")]
-    Api { code: u32, message: String },
+    Api { code: i32, message: String },
 
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
