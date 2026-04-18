@@ -211,10 +211,10 @@ pub async fn list_users(path: &str) -> Result<Vec<String>> {
     let mut ids = Vec::with_capacity(rows.len());
     for row in rows {
         let name: String = row.try_get("name")?;
-        if let Some(id) = name.strip_prefix("gacha_") {
-            if validate_player_id(id).is_ok() {
-                ids.push(id.to_string());
-            }
+        if let Some(id) = name.strip_prefix("gacha_")
+            && validate_player_id(id).is_ok()
+        {
+            ids.push(id.to_string());
         }
     }
 
@@ -294,9 +294,15 @@ mod tests {
         let path = test_db_path();
         let player_id = "123456789";
 
-        add_records(&path, player_id, "76402e5b", "zh-Hans", vec![sample_record("r1")])
-            .await
-            .unwrap();
+        add_records(
+            &path,
+            player_id,
+            "76402e5b",
+            "zh-Hans",
+            vec![sample_record("r1")],
+        )
+        .await
+        .unwrap();
 
         let records = query_records(&path, player_id, &GachaFilter::default())
             .await
