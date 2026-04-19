@@ -16,7 +16,7 @@ path = "src/main.rs"
 dioxus = { version = "0.7", features = ["desktop"] }
 
 rfd = "0.15"
-directories = "5"
+directories = "6"
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
