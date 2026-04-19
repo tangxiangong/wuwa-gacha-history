@@ -31,7 +31,7 @@ pub struct BannerStats {
     pub rate_5: f64,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FiveStarSegment {
     pub end: Option<EnrichedPull>,
     pub items: Vec<EnrichedPull>,
@@ -40,7 +40,7 @@ pub struct FiveStarSegment {
     pub pad: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct VersionGroup {
     pub version: String,
     pub start: Option<NaiveDateTime>,
