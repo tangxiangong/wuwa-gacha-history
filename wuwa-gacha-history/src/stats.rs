@@ -108,7 +108,7 @@ pub fn banner_stats(chrono: &[EnrichedPull]) -> BannerStats {
     BannerStats {
         total,
         up_count,
-        stray_count: r5.len() - up_count,
+        stray_count: r5.len().saturating_sub(up_count),
         r5,
         r4,
         avg_pity_5,
@@ -123,14 +123,16 @@ pub fn segments_by_five(chrono: &[EnrichedPull]) -> Vec<FiveStarSegment> {
     let mut buf: Vec<EnrichedPull> = Vec::new();
     for p in chrono.iter().cloned() {
         let is_five = p.record.quality_level == QualityLevel::FiveStar;
-        buf.push(p.clone());
+        let is_up = p.is_up.unwrap_or(false);
+        buf.push(p);
         if is_five {
             let pity = buf.len() as u32;
+            let end = buf.last().cloned();
             segs.push(FiveStarSegment {
-                end: Some(p.clone()),
+                end,
                 items: std::mem::take(&mut buf),
                 pity,
-                is_up: p.is_up.unwrap_or(false),
+                is_up,
                 pad: false,
             });
         }
@@ -174,6 +176,7 @@ pub fn group_by_version(chrono: &[EnrichedPull]) -> Vec<VersionGroup> {
                 .cloned()
                 .collect();
             let ups = r5.iter().filter(|p| p.is_up == Some(true)).count();
+            let stray = r5.len().saturating_sub(ups);
             let mut up_names: Vec<String> = Vec::new();
             for p in &r5 {
                 if p.is_up == Some(true) && !up_names.contains(&p.record.name) {
@@ -193,14 +196,11 @@ pub fn group_by_version(chrono: &[EnrichedPull]) -> Vec<VersionGroup> {
                 r5,
                 r4,
                 ups,
-                stray: 0, // filled below
+                stray,
                 up_names,
             }
         })
         .collect();
-    for g in &mut result {
-        g.stray = g.r5.len() - g.ups;
-    }
     // Newest version first. Assumes semantic "major.minor" with numeric compare.
     result.sort_by(|a, b| natural_version_cmp(&b.version, &a.version));
     result
