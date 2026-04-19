@@ -1,0 +1,11 @@
+[application]
+name = "wuwa-gacha-history"
+default_platform = "desktop"
+
+[application.asset]
+style = []
+script = []
+
+[tool.dioxus.tailwind]
+input = "app/assets/tailwind.css"
+output = "app/assets/tailwind.out.css"

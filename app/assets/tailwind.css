@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-star-5: #e8c170;
+  --color-star-4: #a674d8;
+  --color-star-3: #5b8fd4;
+  --color-bg-base: #0d0b08;
+  --color-bg-panel: #17130d;
+  --color-border-gold: #8a6a2e;
+  --color-fg-base: #e6dcc2;
+  --color-fg-dim: #9a8d71;
+}
