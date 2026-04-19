@@ -13,4 +13,4 @@ src-tauri/gen/schemas
 .superpowers/
 .worktrees/
 docs/superpowers/
-/app/assets/tailwind.out.css
+/app/assets/tailwind.css

@@ -1,0 +1,11 @@
+[application]
+
+[web.app]
+title = "鸣潮抽卡记录"
+
+[web.resource]
+style = []
+script = []
+
+[web.resource.dev]
+script = []
