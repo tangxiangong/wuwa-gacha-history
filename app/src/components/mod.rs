@@ -5,6 +5,7 @@ pub mod fetch_form;
 pub mod labels;
 pub mod main_layout;
 pub mod pagination;
+pub mod record_table;
 pub mod sidebar;
 pub mod welcome;
 

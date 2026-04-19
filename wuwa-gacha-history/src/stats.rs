@@ -9,7 +9,7 @@ pub const SOFT_PITY: u32 = 66;
 pub const HARD_PITY: u32 = 80;
 pub const ASTRITE_PER_PULL: u32 = 160;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct EnrichedPull {
     pub record: GachaRecord,
     /// 1-based position in chronological order (oldest first).

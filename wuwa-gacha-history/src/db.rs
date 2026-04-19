@@ -28,7 +28,7 @@ async fn pool(path: &str) -> Result<&'static SqlitePool> {
     .await
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GachaRecord {
     pub id: u64,
