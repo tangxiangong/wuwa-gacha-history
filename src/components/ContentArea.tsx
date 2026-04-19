@@ -1,12 +1,15 @@
-import { createSignal, createEffect, on, Show } from "solid-js";
+import { createSignal, createEffect, createMemo, on, Show } from "solid-js";
 import { queryGachaRecords } from "../lib/commands";
 import { CARD_POOL_LABELS, QualityLevel } from "../lib/types";
 import type { CardPool, GachaFilter, GachaRecord } from "../lib/types";
 import FilterPanel from "./FilterPanel";
 import RecordTable from "./RecordTable";
-import Pagination from "./Pagination";
+import BarsView from "./BarsView";
+import CardsView from "./CardsView";
+import SummaryView from "./SummaryView";
+import { bannerStats, enrichPulls } from "../lib/stats";
 
-const PAGE_SIZE = 20;
+type ViewMode = "bars" | "cards" | "summary";
 
 interface ContentAreaProps {
   activePool: CardPool | null;
@@ -16,14 +19,10 @@ interface ContentAreaProps {
 export default function ContentArea(props: ContentAreaProps) {
   const [records, setRecords] = createSignal<GachaRecord[]>([]);
   const [loading, setLoading] = createSignal(false);
-  const [page, setPage] = createSignal(1);
-  const [totalRecords, setTotalRecords] = createSignal(0);
+  const [view, setView] = createSignal<ViewMode>("bars");
 
-  // Filter state
   const [filterOpen, setFilterOpen] = createSignal(false);
-  const [qualityLevel, setQualityLevel] = createSignal<QualityLevel | null>(
-    null,
-  );
+  const [qualityLevel, setQualityLevel] = createSignal<QualityLevel | null>(null);
   const [nameQuery, setNameQuery] = createSignal("");
   const [timeFrom, setTimeFrom] = createSignal("");
   const [timeTo, setTimeTo] = createSignal("");
@@ -41,8 +40,8 @@ export default function ContentArea(props: ContentAreaProps) {
       name: nameQuery() || null,
       timeFrom: timeFrom() ? `${timeFrom()}T00:00:00` : null,
       timeTo: timeTo() ? `${timeTo()}T23:59:59` : null,
-      limit: PAGE_SIZE,
-      offset: (page() - 1) * PAGE_SIZE,
+      limit: null,
+      offset: null,
     };
   }
 
@@ -50,24 +49,16 @@ export default function ContentArea(props: ContentAreaProps) {
     if (!props.activePool || !props.playerId) return;
     setLoading(true);
     try {
-      const filter = buildFilter();
-      const result = await queryGachaRecords(props.playerId, filter);
+      const result = await queryGachaRecords(props.playerId, buildFilter());
       setRecords(result);
-
-      // Fetch total count (without limit/offset) for pagination
-      const countFilter = { ...filter, limit: null, offset: null };
-      const allResults = await queryGachaRecords(props.playerId, countFilter);
-      setTotalRecords(allResults.length);
     } catch (e) {
       console.error("Failed to query records:", e);
       setRecords([]);
-      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
   }
 
-  // Reset page and reload when user, pool, or filters change
   createEffect(
     on(
       () => [
@@ -78,25 +69,12 @@ export default function ContentArea(props: ContentAreaProps) {
         timeFrom(),
         timeTo(),
       ],
-      () => {
-        setPage(1);
-        loadRecords();
-      },
-    ),
-  );
-
-  // Reload when page changes (but don't reset page)
-  createEffect(
-    on(
-      () => page(),
       () => loadRecords(),
-      { defer: true },
     ),
   );
 
-  function handlePageChange(newPage: number) {
-    setPage(newPage);
-  }
+  const chrono = createMemo(() => enrichPulls(records()));
+  const stats = createMemo(() => bannerStats(chrono()));
 
   return (
     <div class="content-area">
@@ -126,13 +104,64 @@ export default function ContentArea(props: ContentAreaProps) {
           onTimeFromChange={setTimeFrom}
           onTimeToChange={setTimeTo}
         />
-        <RecordTable records={records()} loading={loading()} />
-        <Pagination
-          currentPage={page()}
-          totalRecords={totalRecords()}
-          pageSize={PAGE_SIZE}
-          onPageChange={handlePageChange}
-        />
+
+        <div class="view-modes">
+          <button
+            class={`vm-pill ${view() === "bars" ? "active" : ""}`}
+            onClick={() => setView("bars")}
+          >
+            条形式
+          </button>
+          <button
+            class={`vm-pill ${view() === "cards" ? "active" : ""}`}
+            onClick={() => setView("cards")}
+          >
+            卡片式
+          </button>
+          <button
+            class={`vm-pill ${view() === "summary" ? "active" : ""}`}
+            onClick={() => setView("summary")}
+          >
+            版本总结
+          </button>
+        </div>
+
+        <div class="sum-strip">
+          <div class="sum-cell">
+            <div class="v">{stats().total}</div>
+            <div class="k">抽卡数</div>
+          </div>
+          <div class="sum-cell">
+            <div class="v">{stats().upCount}</div>
+            <div class="k">UP数</div>
+          </div>
+          <div class="sum-cell">
+            <div class="v">
+              {stats().upCount
+                ? (stats().total / stats().upCount).toFixed(1)
+                : "—"}
+            </div>
+            <div class="k">每UP抽数</div>
+          </div>
+          <div class="sum-cell">
+            <div class="v muted">
+              {stats().strayCount}/{stats().r5.length}
+            </div>
+            <div class="k">歪/出卡数</div>
+          </div>
+        </div>
+
+        <Show when={view() === "bars"}>
+          <BarsView pulls={chrono()} />
+        </Show>
+        <Show when={view() === "cards"}>
+          <CardsView pulls={chrono()} />
+        </Show>
+        <Show when={view() === "summary"}>
+          <SummaryView pulls={chrono()} />
+        </Show>
+
+        <RecordTable pulls={chrono()} loading={loading()} />
       </Show>
     </div>
   );
