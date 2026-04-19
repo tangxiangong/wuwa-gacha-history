@@ -11,12 +11,12 @@ returns a misleading 500). The relevant portrait URL for each entry lives
 at `content.contentUrl`, and the display name at `name`.
 
 Usage:
-  uv run --project scripts main.py                      # -> ./public/wiki-art/
+  uv run --project scripts main.py                      # -> ./assets/wiki-art/
   uv run --project scripts main.py ./out                # custom dir
   uv run --project scripts main.py --only weapons       # one category
   uv run --project scripts main.py -j 16                # 16 parallel downloads
 
-Default output lives under public/ so Vite serves the portraits as
+Default output lives under assets/ so Vite serves the portraits as
 static assets at /wiki-art/<name>.png without bundling them.
 """
 
@@ -165,8 +165,8 @@ def main() -> int:
     parser.add_argument(
         "out",
         nargs="?",
-        default="public/wiki-art",
-        help="output directory (default: ./public/wiki-art)",
+        default="assets/wiki-art",
+        help="output directory (default: ./assets/wiki-art)",
     )
     parser.add_argument(
         "--only", choices=list(CATALOGUES.keys()), help="fetch one category only"
