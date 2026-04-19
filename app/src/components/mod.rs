@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 use wuwa_gacha_history::CardPool;
 
+pub mod bars_view;
+pub mod cards_view;
+pub mod content_area;
 pub mod fetch_form;
 pub mod filter_panel;
 pub mod labels;
@@ -8,6 +11,7 @@ pub mod main_layout;
 pub mod pagination;
 pub mod record_table;
 pub mod sidebar;
+pub mod summary_view;
 pub mod welcome;
 
 use main_layout::MainLayout;

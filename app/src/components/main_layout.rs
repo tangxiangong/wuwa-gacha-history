@@ -1,17 +1,17 @@
 use dioxus::prelude::*;
 
-use crate::components::sidebar::Sidebar;
+use crate::components::{content_area::ContentArea, sidebar::Sidebar};
 
 #[component]
 pub fn MainLayout() -> Element {
     rsx! {
         div { class: "flex h-screen bg-bg-base",
             Sidebar {
-                on_add_user: move |_| { /* Task 23 will flip GlobalState::add_user_open */ },
-                on_export:   move |_| { /* Task 24 will flip GlobalState::export_open */ },
+                on_add_user: move |_| { /* Task 23 */ },
+                on_export:   move |_| { /* Task 24 */ },
             }
             main { class: "flex-1 overflow-auto p-6",
-                div { class: "text-fg-dim", "ContentArea 待接入（Task 19）" }
+                ContentArea {}
             }
         }
     }
