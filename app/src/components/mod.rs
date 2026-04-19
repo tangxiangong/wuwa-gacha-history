@@ -5,6 +5,7 @@ pub mod add_user_dialog;
 pub mod bars_view;
 pub mod cards_view;
 pub mod content_area;
+pub mod export_dialog;
 pub mod fetch_form;
 pub mod filter_panel;
 pub mod labels;
@@ -16,6 +17,7 @@ pub mod summary_view;
 pub mod welcome;
 
 use add_user_dialog::AddUserDialog;
+use export_dialog::ExportDialog;
 use main_layout::MainLayout;
 use welcome::WelcomePage;
 
@@ -72,7 +74,7 @@ pub fn Root() -> Element {
                 on_close: move |_| add_user_open.set(false),
                 on_user_added,
             }
-            // ExportDialog {} added in Task 24
+            ExportDialog {}
         }
     }
 }
