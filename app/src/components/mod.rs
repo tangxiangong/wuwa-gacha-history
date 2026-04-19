@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+pub mod labels;
+
 #[component]
 pub fn Root() -> Element {
     rsx! {
