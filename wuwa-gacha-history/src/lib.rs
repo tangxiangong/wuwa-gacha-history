@@ -1,3 +1,6 @@
+mod catalog;
+pub use catalog::*;
+
 mod client;
 pub use client::*;
 
