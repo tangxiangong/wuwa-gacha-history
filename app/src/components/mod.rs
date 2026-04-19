@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use wuwa_gacha_history::CardPool;
 
+pub mod add_user_dialog;
 pub mod bars_view;
 pub mod cards_view;
 pub mod content_area;
@@ -14,16 +15,18 @@ pub mod sidebar;
 pub mod summary_view;
 pub mod welcome;
 
+use add_user_dialog::AddUserDialog;
 use main_layout::MainLayout;
 use welcome::WelcomePage;
 
 /// Reactive global state shared under `use_context`.
-/// Note: expanded later in Task 23 with `add_user_open` / `export_open`.
 #[derive(Clone, Copy)]
 pub struct GlobalState {
     pub users: Signal<Vec<String>>,
     pub player_id: Signal<Option<String>>,
     pub active_pool: Signal<Option<CardPool>>,
+    pub add_user_open: Signal<bool>,
+    pub export_open: Signal<bool>,
 }
 
 #[component]
@@ -31,8 +34,10 @@ pub fn Root() -> Element {
     let mut users = use_signal::<Vec<String>>(Vec::new);
     let mut player_id = use_signal::<Option<String>>(|| None);
     let active_pool = use_signal::<Option<CardPool>>(|| None);
+    let mut add_user_open = use_signal(|| false);
+    let export_open = use_signal(|| false);
 
-    let state = GlobalState { users, player_id, active_pool };
+    let state = GlobalState { users, player_id, active_pool, add_user_open, export_open };
     use_context_provider(|| state);
 
     // Initial load of users list.
@@ -62,6 +67,12 @@ pub fn Root() -> Element {
             WelcomePage { on_user_added }
         } else {
             MainLayout {}
+            AddUserDialog {
+                open: add_user_open(),
+                on_close: move |_| add_user_open.set(false),
+                on_user_added,
+            }
+            // ExportDialog {} added in Task 24
         }
     }
 }
