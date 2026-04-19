@@ -1,6 +1,6 @@
 //! Resonator (character) and Weapon catalogs with CN/EN names and asset paths.
 //!
-//! Counts mirror `public/wiki-art/`: 53 Resonators, 113 Weapons (v3.2, 2026-04).
+//! Counts mirror `assets/wiki-art/`: 53 Resonators, 113 Weapons (v3.2, 2026-04).
 //!
 //! Standard 5★ Resonators: Calcharo, Encore, Jianxin, Jiyan, Lingyang, Verina
 //! (+ 6 Rover variants). Every other 5★ is Limited.

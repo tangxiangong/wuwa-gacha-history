@@ -47,7 +47,7 @@ bun run format
 wuwa-gacha-history/     核心域逻辑：API 客户端、SQLite、导出
 src-tauri/              Tauri 后端，sniffer/ 为抓包实现
 src/                    SolidJS + TypeScript 前端
-public/wiki-art/        角色与武器立绘（53 + 113，从库街区 Wiki 抓取）
+assets/wiki-art/        角色与武器立绘（53 + 113，从库街区 Wiki 抓取）
 scripts/                uv 工程，包含立绘抓取脚本
 ```
 
