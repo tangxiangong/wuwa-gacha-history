@@ -55,8 +55,8 @@ impl HttpHandler for Interceptor {
         _ctx: &HttpContext,
         req: Request<Body>,
     ) -> RequestOrResponse {
-        let is_target = req.uri().host().map(host_matches).unwrap_or(false)
-            && req.uri().path() == TARGET_PATH;
+        let is_target =
+            req.uri().host().map(host_matches).unwrap_or(false) && req.uri().path() == TARGET_PATH;
 
         if !is_target {
             return req.into();
@@ -85,11 +85,7 @@ impl HttpHandler for Interceptor {
         Request::from_parts(parts, Body::from(Full::new(bytes))).into()
     }
 
-    async fn handle_response(
-        &mut self,
-        _ctx: &HttpContext,
-        res: Response<Body>,
-    ) -> Response<Body> {
+    async fn handle_response(&mut self, _ctx: &HttpContext, res: Response<Body>) -> Response<Body> {
         res
     }
 }

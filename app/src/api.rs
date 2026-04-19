@@ -4,9 +4,9 @@
 use std::path::{Path, PathBuf};
 
 use wuwa_gacha_history::{
-    CardPool, GachaFilter, GachaHistoryClient, GachaRecord, LogParams, RequestParams, Result,
-    ResponseRecord, add_records, export_to_file, list_users as core_list_users, query_records,
-    read_params as core_read_params,
+    CardPool, GachaFilter, GachaHistoryClient, GachaRecord, LogParams, RequestParams,
+    ResponseRecord, Result, add_records, export_to_file, list_users as core_list_users,
+    query_records, read_params as core_read_params,
 };
 
 use crate::platform::db_path;

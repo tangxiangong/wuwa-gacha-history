@@ -30,7 +30,11 @@ impl CaMaterial {
             let key_pem = fs::read_to_string(&key_path)
                 .await
                 .map_err(|e| e.to_string())?;
-            return Ok(Self { cert_pem, key_pem, cert_path });
+            return Ok(Self {
+                cert_pem,
+                key_pem,
+                cert_path,
+            });
         }
 
         let (cert_pem, key_pem) = generate_ca()?;
@@ -40,7 +44,11 @@ impl CaMaterial {
         fs::write(&key_path, &key_pem)
             .await
             .map_err(|e| e.to_string())?;
-        Ok(Self { cert_pem, key_pem, cert_path })
+        Ok(Self {
+            cert_pem,
+            key_pem,
+            cert_path,
+        })
     }
 
     pub fn into_key_and_cert(self) -> Result<(KeyPair, Certificate), String> {

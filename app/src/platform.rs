@@ -27,10 +27,7 @@ pub fn sniffer_ca_dir() -> PathBuf {
 }
 
 /// Spawn a native save dialog and return the chosen path (or None if cancelled).
-pub async fn pick_save_file(
-    default_name: &str,
-    filters: &[(&str, &[&str])],
-) -> Option<PathBuf> {
+pub async fn pick_save_file(default_name: &str, filters: &[(&str, &[&str])]) -> Option<PathBuf> {
     let mut dlg = rfd::AsyncFileDialog::new().set_file_name(default_name);
     for (desc, exts) in filters {
         dlg = dlg.add_filter(*desc, exts);

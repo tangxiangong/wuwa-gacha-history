@@ -6,23 +6,32 @@ use crate::components::{GlobalState, labels::card_pool_label};
 #[derive(Props, Clone, PartialEq)]
 pub struct SidebarProps {
     pub on_add_user: EventHandler<()>,
-    pub on_export:   EventHandler<()>,
+    pub on_export: EventHandler<()>,
 }
 
 const GROUPS: &[(&str, &[CardPool])] = &[
-    ("限定池", &[
-        CardPool::FeaturedResonatorConvene,
-        CardPool::FeaturedWeaponConvene,
-    ]),
-    ("常驻池", &[
-        CardPool::StandardResonatorConvene,
-        CardPool::StandardWeaponConvene,
-    ]),
-    ("其他", &[
-        CardPool::NoviceConvene,
-        CardPool::BeginnerChoiceConvene,
-        CardPool::GivebackCustomConvene,
-    ]),
+    (
+        "限定池",
+        &[
+            CardPool::FeaturedResonatorConvene,
+            CardPool::FeaturedWeaponConvene,
+        ],
+    ),
+    (
+        "常驻池",
+        &[
+            CardPool::StandardResonatorConvene,
+            CardPool::StandardWeaponConvene,
+        ],
+    ),
+    (
+        "其他",
+        &[
+            CardPool::NoviceConvene,
+            CardPool::BeginnerChoiceConvene,
+            CardPool::GivebackCustomConvene,
+        ],
+    ),
 ];
 
 #[component]

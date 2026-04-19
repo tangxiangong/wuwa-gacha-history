@@ -48,19 +48,20 @@ pub fn FetchForm(props: FetchFormProps) -> Element {
     use_effect({
         let incoming = props.initial_json.clone();
         move || {
-            if let Some(s) = incoming.clone() {
-                if !s.is_empty() && raw() != s {
-                    raw.set(s);
-                }
+            if let Some(s) = incoming.clone()
+                && !s.is_empty()
+                && raw() != s
+            {
+                raw.set(s);
             }
         }
     });
 
     let on_submit = {
-        let on_success = props.on_success.clone();
+        let on_success = props.on_success;
         move |_: Event<MouseData>| {
             let raw_now = raw();
-            let on_success = on_success.clone();
+            let on_success = on_success;
             spawn(async move {
                 status.set(Status::Validating);
                 let payload: PastedPayload = match serde_json::from_str(raw_now.trim()) {

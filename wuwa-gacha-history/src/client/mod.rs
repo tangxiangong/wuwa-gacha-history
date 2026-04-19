@@ -9,7 +9,7 @@ pub use utils::*;
 use crate::{Error, Result};
 use reqwest::{
     Client, ClientBuilder,
-    header::{HeaderMap, HeaderValue, ACCEPT, ORIGIN, REFERER, USER_AGENT},
+    header::{ACCEPT, HeaderMap, HeaderValue, ORIGIN, REFERER, USER_AGENT},
 };
 
 const API_URL: &str = "https://gmserver-api.aki-game2.com/gacha/record/query";
@@ -26,7 +26,10 @@ pub struct GachaHistoryClient {
 impl GachaHistoryClient {
     pub fn new(params: RequestParams) -> Result<Self> {
         let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, HeaderValue::from_static("application/json, text/plain, */*"));
+        headers.insert(
+            ACCEPT,
+            HeaderValue::from_static("application/json, text/plain, */*"),
+        );
         headers.insert(ORIGIN, HeaderValue::from_static(RESOURCES_ORIGIN));
         headers.insert(REFERER, HeaderValue::from_static(RESOURCES_REFERER));
         headers.insert(USER_AGENT, HeaderValue::from_static(WEBVIEW_UA));

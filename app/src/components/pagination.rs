@@ -16,7 +16,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
     let win = window(page, props.total_pages, 5);
     let prev_disabled = page <= 1;
     let next_disabled = page >= props.total_pages;
-    let on_page = props.on_page.clone();
+    let on_page = props.on_page;
 
     rsx! {
         nav { class: "flex gap-1 items-center justify-center py-3 text-sm",
@@ -30,7 +30,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                     label: format!("{p}"),
                     active: p == page,
                     on_click: {
-                        let on_page = props.on_page.clone();
+                        let on_page = props.on_page;
                         move |_| on_page.call(p)
                     },
                 }
@@ -39,7 +39,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                 label: "›".to_string(),
                 disabled: next_disabled,
                 on_click: {
-                    let on_page = props.on_page.clone();
+                    let on_page = props.on_page;
                     move |_| on_page.call(page + 1)
                 },
             }

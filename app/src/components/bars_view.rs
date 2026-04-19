@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use wuwa_gacha_history::{segments_by_five, EnrichedPull, FiveStarSegment};
+use wuwa_gacha_history::{EnrichedPull, FiveStarSegment, segments_by_five};
 
 #[derive(Props, Clone, PartialEq)]
 pub struct BarsViewProps {
@@ -39,13 +39,17 @@ fn SegmentBar(props: SegmentBarProps) -> Element {
     } else if seg.is_up {
         (
             "bg-star-5/80",
-            seg.end.as_ref().map(|e| format!("{} — {} 抽（UP）", e.record.name, seg.pity))
+            seg.end
+                .as_ref()
+                .map(|e| format!("{} — {} 抽（UP）", e.record.name, seg.pity))
                 .unwrap_or_default(),
         )
     } else {
         (
             "bg-star-4/80",
-            seg.end.as_ref().map(|e| format!("{} — {} 抽（歪）", e.record.name, seg.pity))
+            seg.end
+                .as_ref()
+                .map(|e| format!("{} — {} 抽（歪）", e.record.name, seg.pity))
                 .unwrap_or_default(),
         )
     };

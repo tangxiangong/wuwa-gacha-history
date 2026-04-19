@@ -43,7 +43,7 @@ pub fn ExportDialog() -> Element {
             let pool = pool_opt;
             spawn(async move {
                 let (default_name, desc, exts): (&str, &str, &[&str]) = match chosen {
-                    ExportFmt::Csv  => ("gacha.csv",  "CSV",  &["csv"]),
+                    ExportFmt::Csv => ("gacha.csv", "CSV", &["csv"]),
                     ExportFmt::Xlsx => ("gacha.xlsx", "XLSX", &["xlsx"]),
                     ExportFmt::Json => ("gacha.json", "JSON", &["json"]),
                 };

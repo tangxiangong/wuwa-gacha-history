@@ -14,9 +14,7 @@ use std::fs;
 use std::path::PathBuf;
 
 fn main() {
-    let manifest_dir = PathBuf::from(
-        env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"),
-    );
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
     ensure_tailwind_stub(&manifest_dir);
     emit_wiki_art_match(&manifest_dir);
 }
@@ -60,12 +58,7 @@ fn emit_wiki_art_match(manifest_dir: &std::path::Path) {
     println!("cargo:rerun-if-changed=assets/wiki-art");
 }
 
-fn emit_lookup(
-    out: &mut String,
-    dir: &std::path::Path,
-    url_prefix: &str,
-    fn_name: &str,
-) {
+fn emit_lookup(out: &mut String, dir: &std::path::Path, url_prefix: &str, fn_name: &str) {
     let mut names: Vec<String> = fs::read_dir(dir)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", dir.display()))
         .filter_map(|r| r.ok())

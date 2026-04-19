@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use wuwa_gacha_history::{group_by_version, EnrichedPull, VersionGroup};
+use wuwa_gacha_history::{EnrichedPull, VersionGroup, group_by_version};
 
 #[derive(Props, Clone, PartialEq)]
 pub struct SummaryViewProps {
@@ -52,7 +52,10 @@ fn VersionRow(props: VersionRowProps) -> Element {
 }
 
 #[derive(Props, Clone, PartialEq)]
-struct CellProps { v: String, k: String }
+struct CellProps {
+    v: String,
+    k: String,
+}
 
 #[component]
 fn Cell(props: CellProps) -> Element {

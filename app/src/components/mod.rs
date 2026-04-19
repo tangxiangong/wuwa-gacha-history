@@ -39,7 +39,13 @@ pub fn Root() -> Element {
     let mut add_user_open = use_signal(|| false);
     let export_open = use_signal(|| false);
 
-    let state = GlobalState { users, player_id, active_pool, add_user_open, export_open };
+    let state = GlobalState {
+        users,
+        player_id,
+        active_pool,
+        add_user_open,
+        export_open,
+    };
     use_context_provider(|| state);
 
     // Initial load of users list.

@@ -97,7 +97,10 @@ pub fn banner_stats(chrono: &[EnrichedPull]) -> BannerStats {
     let avg_pity_5 = if r5.is_empty() {
         0.0
     } else {
-        r5.iter().map(|p| p.pity_at_pull.unwrap_or(0) as f64).sum::<f64>() / r5.len() as f64
+        r5.iter()
+            .map(|p| p.pity_at_pull.unwrap_or(0) as f64)
+            .sum::<f64>()
+            / r5.len() as f64
     };
     let total = chrono.len();
     let rate_5 = if total == 0 {
@@ -186,9 +189,7 @@ pub fn group_by_version(chrono: &[EnrichedPull]) -> Vec<VersionGroup> {
             let start = VERSIONS
                 .iter()
                 .find(|vr| vr.version == version)
-                .and_then(|vr| {
-                    NaiveDateTime::parse_from_str(vr.start, "%Y-%m-%dT%H:%M:%S").ok()
-                });
+                .and_then(|vr| NaiveDateTime::parse_from_str(vr.start, "%Y-%m-%dT%H:%M:%S").ok());
             VersionGroup {
                 version,
                 start,
@@ -261,9 +262,9 @@ mod tests {
     fn enrich_sets_pity_and_reverses_order() {
         // Records are newest-first from API; enrich reverses.
         let raw = vec![
-            mk(3, "Jinhsi", QualityLevel::FiveStar, 0),     // newest, 5★
+            mk(3, "Jinhsi", QualityLevel::FiveStar, 0), // newest, 5★
             mk(2, "Yuanwu", QualityLevel::FourStar, 1),
-            mk(1, "Yuanwu", QualityLevel::FourStar, 2),     // oldest
+            mk(1, "Yuanwu", QualityLevel::FourStar, 2), // oldest
         ];
         let enriched = enrich_pulls(raw);
         assert_eq!(enriched.len(), 3);
@@ -279,7 +280,7 @@ mod tests {
     #[test]
     fn stats_counts_up_vs_stray() {
         let raw = vec![
-            mk(1, "Jinhsi", QualityLevel::FiveStar, 0),  // UP
+            mk(1, "Jinhsi", QualityLevel::FiveStar, 0),   // UP
             mk(2, "Calcharo", QualityLevel::FiveStar, 1), // standard
         ];
         let s = banner_stats(&enrich_pulls(raw));

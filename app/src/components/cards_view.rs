@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use wuwa_gacha_history::{segments_by_five, CardPool, EnrichedPull, FiveStarSegment};
+use wuwa_gacha_history::{CardPool, EnrichedPull, FiveStarSegment, segments_by_five};
 
 use crate::assets_wiki::{character_asset, weapon_asset};
 
@@ -48,12 +48,24 @@ fn Card(props: CardProps) -> Element {
     } else {
         character_asset(&end.record.name)
     };
-    let border = if props.seg.is_up { "border-star-5" } else { "border-star-4" };
+    let border = if props.seg.is_up {
+        "border-star-5"
+    } else {
+        "border-star-4"
+    };
     let name = end.record.name.clone();
     let pity_text = format!("{} 抽", props.seg.pity);
     let up_label = if props.seg.is_up { "UP" } else { "歪" };
-    let up_class = if props.seg.is_up { "text-xs text-star-5" } else { "text-xs text-star-4" };
-    let first_char_fallback: String = name.chars().next().map(|c| c.to_string()).unwrap_or_default();
+    let up_class = if props.seg.is_up {
+        "text-xs text-star-5"
+    } else {
+        "text-xs text-star-4"
+    };
+    let first_char_fallback: String = name
+        .chars()
+        .next()
+        .map(|c| c.to_string())
+        .unwrap_or_default();
 
     rsx! {
         div { class: "w-36 bg-bg-panel border-2 {border} rounded p-2 flex flex-col items-center gap-1",

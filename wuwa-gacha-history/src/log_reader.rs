@@ -26,9 +26,7 @@ pub async fn read_params(
     } else if let Some(dir) = game_dir {
         paths_under_game_dir(&dir)
     } else {
-        return Err(
-            "请先点击「选择游戏目录」指定鸣潮安装位置".to_string(),
-        );
+        return Err("请先点击「选择游戏目录」指定鸣潮安装位置".to_string());
     };
 
     let mut best: Option<(PathBuf, String, u64)> = None;
@@ -63,10 +61,9 @@ pub async fn read_params(
 }
 
 fn extract_latest_url(content: &str) -> Option<String> {
-    let re = Regex::new(
-        r#"https?://aki-gm-resources(?:-oversea)?\.aki-game\.(?:com|net)/[^\s"'\\]+"#,
-    )
-    .ok()?;
+    let re =
+        Regex::new(r#"https?://aki-gm-resources(?:-oversea)?\.aki-game\.(?:com|net)/[^\s"'\\]+"#)
+            .ok()?;
     re.find_iter(content).last().map(|m| m.as_str().to_string())
 }
 
@@ -158,8 +155,12 @@ fn paths_under_game_dir(game_dir: &std::path::Path) -> Vec<PathBuf> {
         "debug.log",
     ];
     vec![
-        rel_main.iter().fold(game_dir.to_path_buf(), |p, s| p.join(s)),
-        rel_debug.iter().fold(game_dir.to_path_buf(), |p, s| p.join(s)),
+        rel_main
+            .iter()
+            .fold(game_dir.to_path_buf(), |p, s| p.join(s)),
+        rel_debug
+            .iter()
+            .fold(game_dir.to_path_buf(), |p, s| p.join(s)),
     ]
 }
 

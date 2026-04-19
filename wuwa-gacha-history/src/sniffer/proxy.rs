@@ -15,8 +15,8 @@ impl ProxyGuard {
 
 #[cfg(target_os = "windows")]
 mod platform {
-    use winreg::enums::*;
     use winreg::RegKey;
+    use winreg::enums::*;
 
     const KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
 
@@ -29,15 +29,14 @@ mod platform {
     impl Inner {
         pub async fn enable(port: u16) -> Result<Self, String> {
             let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-            let (key, _) = hkcu
-                .create_subkey(KEY)
-                .map_err(|e| e.to_string())?;
+            let (key, _) = hkcu.create_subkey(KEY).map_err(|e| e.to_string())?;
 
             let prev_enable: u32 = key.get_value("ProxyEnable").unwrap_or(0);
             let prev_server: Option<String> = key.get_value("ProxyServer").ok();
             let prev_override: Option<String> = key.get_value("ProxyOverride").ok();
 
-            key.set_value("ProxyEnable", &1u32).map_err(|e| e.to_string())?;
+            key.set_value("ProxyEnable", &1u32)
+                .map_err(|e| e.to_string())?;
             key.set_value("ProxyServer", &format!("127.0.0.1:{port}"))
                 .map_err(|e| e.to_string())?;
             key.set_value("ProxyOverride", &"<local>".to_string())
@@ -45,24 +44,30 @@ mod platform {
 
             notify_wininet();
 
-            Ok(Self { prev_enable, prev_server, prev_override })
+            Ok(Self {
+                prev_enable,
+                prev_server,
+                prev_override,
+            })
         }
 
         pub async fn disable(self) -> Result<(), String> {
             let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-            let (key, _) = hkcu
-                .create_subkey(KEY)
-                .map_err(|e| e.to_string())?;
+            let (key, _) = hkcu.create_subkey(KEY).map_err(|e| e.to_string())?;
             key.set_value("ProxyEnable", &self.prev_enable)
                 .map_err(|e| e.to_string())?;
             match self.prev_server {
-                Some(s) => key.set_value("ProxyServer", &s).map_err(|e| e.to_string())?,
+                Some(s) => key
+                    .set_value("ProxyServer", &s)
+                    .map_err(|e| e.to_string())?,
                 None => {
                     let _ = key.delete_value("ProxyServer");
                 }
             }
             match self.prev_override {
-                Some(s) => key.set_value("ProxyOverride", &s).map_err(|e| e.to_string())?,
+                Some(s) => key
+                    .set_value("ProxyOverride", &s)
+                    .map_err(|e| e.to_string())?,
                 None => {
                     let _ = key.delete_value("ProxyOverride");
                 }
@@ -74,7 +79,7 @@ mod platform {
 
     fn notify_wininet() {
         use windows::Win32::Networking::WinInet::{
-            InternetSetOptionW, INTERNET_OPTION_REFRESH, INTERNET_OPTION_SETTINGS_CHANGED,
+            INTERNET_OPTION_REFRESH, INTERNET_OPTION_SETTINGS_CHANGED, InternetSetOptionW,
         };
         unsafe {
             let _ = InternetSetOptionW(None, INTERNET_OPTION_SETTINGS_CHANGED, None, 0);

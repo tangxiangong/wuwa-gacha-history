@@ -65,9 +65,9 @@ pub fn FilterPanel(mut props: FilterPanelProps) -> Element {
 fn QualityChip(level: Option<QualityLevel>, mut quality: Signal<Option<QualityLevel>>) -> Element {
     let is_active = *quality.read() == level;
     let label = match level {
-        None                          => "全部",
-        Some(QualityLevel::FiveStar)  => "5★",
-        Some(QualityLevel::FourStar)  => "4★",
+        None => "全部",
+        Some(QualityLevel::FiveStar) => "5★",
+        Some(QualityLevel::FourStar) => "4★",
         Some(QualityLevel::ThreeStar) => "3★",
     };
     let cls = if is_active {

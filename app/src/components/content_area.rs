@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
 use wuwa_gacha_history::{
-    banner_stats, enrich_pulls, EnrichedPull, GachaFilter, GachaRecord, QualityLevel,
+    EnrichedPull, GachaFilter, GachaRecord, QualityLevel, banner_stats, enrich_pulls,
 };
 
 use crate::components::{
-    filter_panel::FilterPanel, labels::card_pool_label, pagination::Pagination,
-    record_table::RecordTable, GlobalState,
+    GlobalState, filter_panel::FilterPanel, labels::card_pool_label, pagination::Pagination,
+    record_table::RecordTable,
 };
 
 const PAGE_SIZE: usize = 20;
@@ -37,7 +37,7 @@ pub fn ContentArea() -> Element {
     let time_to = use_signal(String::new);
     let mut filter_open = use_signal(|| false);
     let mut page = use_signal(|| 1usize);
-    let mut view = use_signal(|| ViewMode::Bars);
+    let view = use_signal(|| ViewMode::Bars);
 
     let records_resource = {
         let pid = player_id.clone();

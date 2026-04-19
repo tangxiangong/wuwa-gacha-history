@@ -15,23 +15,74 @@ pub struct VersionRelease {
 
 /// Ordered oldest-first.
 pub const VERSIONS: &[VersionRelease] = &[
-    VersionRelease { version: "1.0", start: "2024-05-23T04:00:00" },
-    VersionRelease { version: "1.1", start: "2024-06-28T04:00:00" },
-    VersionRelease { version: "1.2", start: "2024-08-15T04:00:00" },
-    VersionRelease { version: "1.3", start: "2024-09-29T04:00:00" },
-    VersionRelease { version: "1.4", start: "2024-11-14T04:00:00" },
-    VersionRelease { version: "2.0", start: "2025-01-02T04:00:00" },
-    VersionRelease { version: "2.1", start: "2025-02-13T04:00:00" },
-    VersionRelease { version: "2.2", start: "2025-03-27T04:00:00" },
-    VersionRelease { version: "2.3", start: "2025-04-29T04:00:00" },
-    VersionRelease { version: "2.4", start: "2025-06-12T04:00:00" },
-    VersionRelease { version: "2.5", start: "2025-07-24T04:00:00" },
-    VersionRelease { version: "2.6", start: "2025-08-28T04:00:00" },
-    VersionRelease { version: "2.7", start: "2025-10-09T04:00:00" },
-    VersionRelease { version: "2.8", start: "2025-11-20T04:00:00" },
-    VersionRelease { version: "3.0", start: "2025-12-25T04:00:00" },
-    VersionRelease { version: "3.1", start: "2026-02-05T04:00:00" },
-    VersionRelease { version: "3.2", start: "2026-03-19T04:00:00" },
+    VersionRelease {
+        version: "1.0",
+        start: "2024-05-23T04:00:00",
+    },
+    VersionRelease {
+        version: "1.1",
+        start: "2024-06-28T04:00:00",
+    },
+    VersionRelease {
+        version: "1.2",
+        start: "2024-08-15T04:00:00",
+    },
+    VersionRelease {
+        version: "1.3",
+        start: "2024-09-29T04:00:00",
+    },
+    VersionRelease {
+        version: "1.4",
+        start: "2024-11-14T04:00:00",
+    },
+    VersionRelease {
+        version: "2.0",
+        start: "2025-01-02T04:00:00",
+    },
+    VersionRelease {
+        version: "2.1",
+        start: "2025-02-13T04:00:00",
+    },
+    VersionRelease {
+        version: "2.2",
+        start: "2025-03-27T04:00:00",
+    },
+    VersionRelease {
+        version: "2.3",
+        start: "2025-04-29T04:00:00",
+    },
+    VersionRelease {
+        version: "2.4",
+        start: "2025-06-12T04:00:00",
+    },
+    VersionRelease {
+        version: "2.5",
+        start: "2025-07-24T04:00:00",
+    },
+    VersionRelease {
+        version: "2.6",
+        start: "2025-08-28T04:00:00",
+    },
+    VersionRelease {
+        version: "2.7",
+        start: "2025-10-09T04:00:00",
+    },
+    VersionRelease {
+        version: "2.8",
+        start: "2025-11-20T04:00:00",
+    },
+    VersionRelease {
+        version: "3.0",
+        start: "2025-12-25T04:00:00",
+    },
+    VersionRelease {
+        version: "3.1",
+        start: "2026-02-05T04:00:00",
+    },
+    VersionRelease {
+        version: "3.2",
+        start: "2026-03-19T04:00:00",
+    },
 ];
 
 /// Find the WuWa version whose window contains the given ISO timestamp.

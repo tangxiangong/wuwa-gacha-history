@@ -362,13 +362,25 @@ mod tests {
         let pool = CardPool::FeaturedResonatorConvene;
 
         add_records(
-            &path, player_id, "s", "zh-Hans", pool,
+            &path,
+            player_id,
+            "s",
+            "zh-Hans",
+            pool,
             vec![sample_record("a"), sample_record("b")],
-        ).await.unwrap();
+        )
+        .await
+        .unwrap();
         add_records(
-            &path, player_id, "s", "zh-Hans", pool,
+            &path,
+            player_id,
+            "s",
+            "zh-Hans",
+            pool,
             vec![sample_record("c")],
-        ).await.unwrap();
+        )
+        .await
+        .unwrap();
 
         let rows = query_records(&path, player_id, &GachaFilter::default())
             .await
@@ -423,7 +435,15 @@ mod tests {
         assert_eq!(
             names,
             vec![
-                "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8",
+                "item0",
+                "item1",
+                "item2",
+                "item3",
+                "item4",
+                "item5",
+                "item6",
+                "item7",
+                "item8",
                 "item9_5star",
             ],
             "within-same-timestamp order must match response order",
@@ -436,15 +456,25 @@ mod tests {
         let player_id = "666666666";
 
         add_records(
-            &path, player_id, "s", "zh-Hans",
+            &path,
+            player_id,
+            "s",
+            "zh-Hans",
             CardPool::FeaturedResonatorConvene,
             vec![sample_record("r")],
-        ).await.unwrap();
+        )
+        .await
+        .unwrap();
         add_records(
-            &path, player_id, "s", "zh-Hans",
+            &path,
+            player_id,
+            "s",
+            "zh-Hans",
             CardPool::StandardWeaponConvene,
             vec![sample_record("w")],
-        ).await.unwrap();
+        )
+        .await
+        .unwrap();
 
         let rows = query_records(&path, player_id, &GachaFilter::default())
             .await
@@ -456,8 +486,12 @@ mod tests {
     async fn add_records_rejects_invalid_player_id() {
         let path = test_db_path();
         let err = add_records(
-            &path, "bad", "s", "zh-Hans",
-            CardPool::FeaturedResonatorConvene, vec![],
+            &path,
+            "bad",
+            "s",
+            "zh-Hans",
+            CardPool::FeaturedResonatorConvene,
+            vec![],
         )
         .await
         .unwrap_err();
@@ -469,12 +503,26 @@ mod tests {
         let path = test_db_path();
         let pool = CardPool::FeaturedResonatorConvene;
 
-        add_records(&path, "111111111", "s", "zh-Hans", pool, vec![sample_record("a")])
-            .await
-            .unwrap();
-        add_records(&path, "222222222", "s", "zh-Hans", pool, vec![sample_record("b")])
-            .await
-            .unwrap();
+        add_records(
+            &path,
+            "111111111",
+            "s",
+            "zh-Hans",
+            pool,
+            vec![sample_record("a")],
+        )
+        .await
+        .unwrap();
+        add_records(
+            &path,
+            "222222222",
+            "s",
+            "zh-Hans",
+            pool,
+            vec![sample_record("b")],
+        )
+        .await
+        .unwrap();
 
         let r1 = query_records(&path, "111111111", &GachaFilter::default())
             .await
