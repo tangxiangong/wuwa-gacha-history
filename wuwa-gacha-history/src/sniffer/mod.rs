@@ -1,3 +1,7 @@
+//! Local MITM HTTP proxy that captures gacha-record request params.
+//! Exposed as a reusable handle with a tokio broadcast channel so that
+//! any UI frontend (Dioxus, CLI, etc.) can subscribe.
+
 mod ca;
 mod interceptor;
 mod proxy;
@@ -7,22 +11,26 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use hudsucker::{Proxy, certificate_authority::RcgenAuthority};
-use tauri::{AppHandle, Emitter};
-use tokio::sync::{Mutex, mpsc, oneshot};
+use tokio::sync::{Mutex, broadcast, mpsc, oneshot};
 
 pub use interceptor::CapturedParams;
 
-pub const EVENT_PARAMS_CAPTURED: &str = "sniffer://params-captured";
-pub const EVENT_STATUS: &str = "sniffer://status";
+const EVENT_CHANNEL_CAPACITY: usize = 64;
 
-pub struct SnifferState {
-    inner: Arc<Mutex<Option<RunningSniffer>>>,
+#[derive(Debug, Clone)]
+pub enum SnifferEvent {
+    Started { port: u16 },
+    Stopped,
+    Captured(CapturedParams),
+    Error(String),
 }
 
-impl Default for SnifferState {
-    fn default() -> Self {
-        Self { inner: Arc::new(Mutex::new(None)) }
-    }
+/// Cheap-clone handle. Internal state is `Arc`-wrapped; subscribers get their
+/// own `broadcast::Receiver` via [`Self::subscribe`].
+#[derive(Clone)]
+pub struct SnifferHandle {
+    inner: Arc<Mutex<Option<RunningSniffer>>>,
+    events: broadcast::Sender<SnifferEvent>,
 }
 
 struct RunningSniffer {
@@ -30,8 +38,20 @@ struct RunningSniffer {
     proxy_guard: Option<proxy::ProxyGuard>,
 }
 
-impl SnifferState {
-    pub async fn start(&self, app: AppHandle, ca_dir: PathBuf) -> Result<u16, String> {
+impl SnifferHandle {
+    pub fn new() -> Self {
+        let (events, _rx) = broadcast::channel(EVENT_CHANNEL_CAPACITY);
+        Self {
+            inner: Arc::new(Mutex::new(None)),
+            events,
+        }
+    }
+
+    pub fn subscribe(&self) -> broadcast::Receiver<SnifferEvent> {
+        self.events.subscribe()
+    }
+
+    pub async fn start(&self, ca_dir: PathBuf) -> Result<u16, String> {
         let mut slot = self.inner.lock().await;
         if slot.is_some() {
             return Err("sniffer already running".into());
@@ -60,16 +80,19 @@ impl SnifferState {
             })
             .build();
 
-        let app_for_events = app.clone();
+        // Fan mpsc captures out to broadcast subscribers.
+        let fan_events = self.events.clone();
         tokio::spawn(async move {
             while let Some(params) = rx.recv().await {
-                let _ = app_for_events.emit(EVENT_PARAMS_CAPTURED, params);
+                let _ = fan_events.send(SnifferEvent::Captured(params));
             }
         });
 
+        let proxy_events = self.events.clone();
         tokio::spawn(async move {
             if let Err(e) = proxy_built.start().await {
                 tracing::error!("proxy error: {e}");
+                let _ = proxy_events.send(SnifferEvent::Error(format!("proxy error: {e}")));
             }
         });
 
@@ -86,11 +109,11 @@ impl SnifferState {
             proxy_guard: Some(proxy_guard),
         });
 
-        let _ = app.emit(EVENT_STATUS, "started");
+        let _ = self.events.send(SnifferEvent::Started { port });
         Ok(port)
     }
 
-    pub async fn stop(&self, app: AppHandle) -> Result<(), String> {
+    pub async fn stop(&self) -> Result<(), String> {
         let mut slot = self.inner.lock().await;
         let Some(mut running) = slot.take() else {
             return Ok(());
@@ -101,8 +124,14 @@ impl SnifferState {
         if let Some(tx) = running.shutdown.take() {
             let _ = tx.send(());
         }
-        let _ = app.emit(EVENT_STATUS, "stopped");
+        let _ = self.events.send(SnifferEvent::Stopped);
         Ok(())
+    }
+}
+
+impl Default for SnifferHandle {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -111,4 +140,30 @@ fn pick_free_port() -> Result<u16, String> {
     let port = listener.local_addr().map_err(|e| e.to_string())?.port();
     drop(listener);
     Ok(port)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::sync::broadcast::error::TryRecvError;
+
+    #[tokio::test]
+    async fn new_handle_exposes_usable_channel() {
+        let h = SnifferHandle::new();
+        let mut rx = h.subscribe();
+        // No events yet.
+        assert!(matches!(rx.try_recv(), Err(TryRecvError::Empty)));
+
+        // Send a synthetic event and verify reception.
+        h.events.send(SnifferEvent::Stopped).unwrap();
+        let evt = rx.recv().await.unwrap();
+        assert!(matches!(evt, SnifferEvent::Stopped));
+    }
+
+    #[tokio::test]
+    async fn double_stop_is_ok() {
+        let h = SnifferHandle::new();
+        assert!(h.stop().await.is_ok());
+        assert!(h.stop().await.is_ok());
+    }
 }

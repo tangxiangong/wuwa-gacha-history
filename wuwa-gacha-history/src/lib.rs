@@ -18,3 +18,8 @@ pub use version::{VERSIONS, VersionRelease, version_of};
 
 mod log_reader;
 pub use log_reader::{read_params, LogParams};
+
+#[cfg(feature = "sniffer")]
+mod sniffer;
+#[cfg(feature = "sniffer")]
+pub use sniffer::{CapturedParams, SnifferEvent, SnifferHandle};
