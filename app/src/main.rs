@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 
 mod platform;
+mod api;
 
 const FAVICON: Asset = asset!("/assets/favicon.png");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
