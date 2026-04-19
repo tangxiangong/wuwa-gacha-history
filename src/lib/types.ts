@@ -33,6 +33,8 @@ export interface GachaRecord {
   qualityLevel: QualityLevel;
   name: string;
   time: string;
+  /** WuWa version whose window contains `time` (e.g. "2.4"), "pre" before 1.0. */
+  version: string;
 }
 
 export interface GachaFilter {

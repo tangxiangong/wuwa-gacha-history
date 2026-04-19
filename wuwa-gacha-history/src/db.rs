@@ -1,3 +1,4 @@
+use crate::version::{sql_case_expression, version_of};
 use crate::{CardPool, QualityLevel, ResponseRecord, Result};
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
@@ -38,6 +39,9 @@ pub struct GachaRecord {
     pub quality_level: QualityLevel,
     pub name: String,
     pub time: NaiveDateTime,
+    /// WuWa version whose window contains `time` (e.g. "2.4"). "pre" if
+    /// earlier than 1.0 launch.
+    pub version: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -70,7 +74,8 @@ async fn ensure_user_table(pool: &SqlitePool, player_id: &str) -> Result<String>
             quality_level INTEGER NOT NULL,
             name TEXT NOT NULL,
             time TEXT NOT NULL,
-            seq INTEGER NOT NULL DEFAULT 0
+            seq INTEGER NOT NULL DEFAULT 0,
+            version TEXT NOT NULL DEFAULT ''
         )"
     ))
     .execute(pool)
@@ -81,6 +86,20 @@ async fn ensure_user_table(pool: &SqlitePool, player_id: &str) -> Result<String>
     ))
     .execute(pool)
     .await;
+
+    let _ = sqlx::query(&format!(
+        "ALTER TABLE {table} ADD COLUMN version TEXT NOT NULL DEFAULT ''"
+    ))
+    .execute(pool)
+    .await;
+
+    // Backfill version for rows still carrying the empty default.
+    let case = sql_case_expression();
+    sqlx::query(&format!(
+        "UPDATE {table} SET version = ({case}) WHERE version = '' OR version IS NULL"
+    ))
+    .execute(pool)
+    .await?;
 
     sqlx::query(&format!(
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_{table}_record_id ON {table}(record_id)"
@@ -125,6 +144,7 @@ fn record_from_row(row: &sqlx::sqlite::SqliteRow) -> Result<GachaRecord> {
         quality_level,
         name: row.try_get("name")?,
         time,
+        version: row.try_get("version")?,
     })
 }
 
@@ -149,8 +169,8 @@ pub async fn add_records(
 
     let sql = format!(
         "INSERT INTO {table}
-            (server_id, card_pool, language_code, record_id, quality_level, name, time, seq)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            (server_id, card_pool, language_code, record_id, quality_level, name, time, seq, version)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
 
     // Preserve the response's exact ordering. The API returns records with the
@@ -159,6 +179,8 @@ pub async fn add_records(
     // exactly what the player sees in-game.
     for (seq, record) in records.into_iter().enumerate() {
         let synthetic_id = format!("{card_pool_int}-{seq}");
+        let time_iso = record.time.format("%Y-%m-%dT%H:%M:%S").to_string();
+        let version = version_of(&time_iso);
         sqlx::query(&sql)
             .bind(server_id)
             .bind(card_pool_int)
@@ -166,8 +188,9 @@ pub async fn add_records(
             .bind(&synthetic_id)
             .bind(record.quality_level as i32)
             .bind(&record.name)
-            .bind(record.time.format("%Y-%m-%dT%H:%M:%S").to_string())
+            .bind(&time_iso)
             .bind(seq as i64)
+            .bind(version)
             .execute(&mut *tx)
             .await?;
     }
@@ -185,7 +208,7 @@ pub async fn query_records(
     let table = ensure_user_table(pool, player_id).await?;
 
     let mut qb: sqlx::QueryBuilder<'_, sqlx::Sqlite> = sqlx::QueryBuilder::new(format!(
-        "SELECT id, server_id, card_pool, language_code, record_id, quality_level, name, time FROM {table} WHERE 1=1"
+        "SELECT id, server_id, card_pool, language_code, record_id, quality_level, name, time, version FROM {table} WHERE 1=1"
     ));
 
     if let Some(card_pool) = filter.card_pool {

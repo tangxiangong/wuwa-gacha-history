@@ -3,7 +3,7 @@ use rust_xlsxwriter::{Format, Workbook};
 use std::io::Write;
 use std::path::Path;
 
-const HEADERS: [&str; 4] = ["时间", "名称", "星级", "卡池类型"];
+const HEADERS: [&str; 5] = ["时间", "名称", "星级", "卡池类型", "版本"];
 
 pub fn export_csv(records: &[GachaRecord], writer: impl Write) -> Result<()> {
     let mut wtr = csv::Writer::from_writer(writer);
@@ -14,6 +14,7 @@ pub fn export_csv(records: &[GachaRecord], writer: impl Write) -> Result<()> {
             record.name.clone(),
             record.quality_level.to_string(),
             record.card_pool.to_string(),
+            record.version.clone(),
         ])?;
     }
     wtr.flush()?;
@@ -35,12 +36,14 @@ pub fn export_xlsx(records: &[GachaRecord], path: &str) -> Result<()> {
         worksheet.write_string(row, 1, &record.name)?;
         worksheet.write_string(row, 2, record.quality_level.to_string())?;
         worksheet.write_string(row, 3, record.card_pool.to_string())?;
+        worksheet.write_string(row, 4, &record.version)?;
     }
 
     worksheet.set_column_width(0, 20)?;
     worksheet.set_column_width(1, 16)?;
     worksheet.set_column_width(2, 8)?;
     worksheet.set_column_width(3, 12)?;
+    worksheet.set_column_width(4, 8)?;
 
     workbook.save(path)?;
     Ok(())

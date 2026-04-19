@@ -12,3 +12,6 @@ pub use error::*;
 
 mod export;
 pub use export::*;
+
+mod version;
+pub use version::{VERSIONS, VersionRelease, version_of};
