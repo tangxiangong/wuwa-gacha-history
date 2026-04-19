@@ -4,6 +4,7 @@ use wuwa_gacha_history::CardPool;
 pub mod fetch_form;
 pub mod labels;
 pub mod main_layout;
+pub mod pagination;
 pub mod sidebar;
 pub mod welcome;
 
