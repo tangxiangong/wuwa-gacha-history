@@ -15,3 +15,6 @@ pub use export::*;
 
 mod version;
 pub use version::{VERSIONS, VersionRelease, version_of};
+
+mod log_reader;
+pub use log_reader::{read_params, LogParams};
