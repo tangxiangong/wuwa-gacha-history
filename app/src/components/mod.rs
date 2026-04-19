@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 use wuwa_gacha_history::CardPool;
 
 pub mod fetch_form;
+pub mod filter_panel;
 pub mod labels;
 pub mod main_layout;
 pub mod pagination;
