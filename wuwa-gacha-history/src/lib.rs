@@ -23,3 +23,10 @@ pub use log_reader::{read_params, LogParams};
 mod sniffer;
 #[cfg(feature = "sniffer")]
 pub use sniffer::{CapturedParams, SnifferEvent, SnifferHandle};
+
+mod stats;
+pub use stats::{
+    BannerStats, EnrichedPull, FiveStarSegment, PityTier, VersionGroup,
+    banner_stats, enrich_pulls, group_by_version, pity_tier, segments_by_five,
+    ASTRITE_PER_PULL, HARD_PITY, SOFT_PITY,
+};

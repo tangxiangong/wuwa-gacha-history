@@ -191,6 +191,23 @@ impl Standard5StarResonator {
     pub fn asset(&self) -> PathBuf {
         asset_path(CHARACTER_ASSET_DIR, self.data().0)
     }
+    pub fn all() -> &'static [Standard5StarResonator] {
+        use Standard5StarResonator::*;
+        &[
+            Calcharo,
+            Encore,
+            Jianxin,
+            Jiyan,
+            Lingyang,
+            Verina,
+            RoverFemaleAero,
+            RoverFemaleHavoc,
+            RoverFemaleSpectro,
+            RoverMaleAero,
+            RoverMaleHavoc,
+            RoverMaleSpectro,
+        ]
+    }
 }
 
 impl FourStarResonator {
@@ -497,6 +514,21 @@ impl Standard5StarWeapon {
     pub fn asset(&self) -> PathBuf {
         asset_path(WEAPON_ASSET_DIR, self.data().0)
     }
+    pub fn all() -> &'static [Standard5StarWeapon] {
+        use Standard5StarWeapon::*;
+        &[
+            LustrousRazor,
+            EmeraldOfGenesis,
+            StaticMist,
+            AbyssSurges,
+            CosmicRipples,
+            RadianceCleaver,
+            LaserShearer,
+            PhasicHomogenizer,
+            PulsationBracer,
+            BosonAstrolabe,
+        ]
+    }
 }
 
 impl FourStarWeapon {
@@ -649,4 +681,15 @@ impl OneStarWeapon {
     pub fn asset(&self) -> PathBuf {
         asset_path(WEAPON_ASSET_DIR, self.data().0)
     }
+}
+
+/// Return true if `name` (display name, zh or en) is one of the standard 5★
+/// Resonators or Weapons (i.e., non-UP). Accepts both language variants.
+pub fn is_standard_5_star(name: &str) -> bool {
+    Standard5StarResonator::all()
+        .iter()
+        .any(|r| r.zh() == name || r.en() == name)
+        || Standard5StarWeapon::all()
+            .iter()
+            .any(|w| w.zh() == name || w.en() == name)
 }
