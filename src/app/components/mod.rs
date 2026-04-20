@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{app::api, core::CardPool};
 use dioxus::prelude::*;
 
@@ -29,6 +31,7 @@ pub struct GlobalState {
     pub active_pool: Signal<Option<CardPool>>,
     pub add_user_open: Signal<bool>,
     pub export_open: Signal<bool>,
+    pub saved_game_dir: Signal<Option<PathBuf>>,
 }
 
 #[component]
@@ -38,6 +41,7 @@ pub fn Root() -> Element {
     let active_pool = use_signal::<Option<CardPool>>(|| None);
     let mut add_user_open = use_signal(|| false);
     let export_open = use_signal(|| false);
+    let saved_game_dir = use_signal::<Option<PathBuf>>(|| None);
 
     let state = GlobalState {
         users,
@@ -45,6 +49,7 @@ pub fn Root() -> Element {
         active_pool,
         add_user_open,
         export_open,
+        saved_game_dir,
     };
     use_context_provider(|| state);
 
