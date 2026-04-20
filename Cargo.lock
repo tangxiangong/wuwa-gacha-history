@@ -7121,11 +7121,14 @@ dependencies = [
  "bytes",
  "chrono",
  "csv",
+ "dioxus",
+ "directories",
  "http-body-util",
  "hudsucker",
  "rcgen",
  "regex",
  "reqwest",
+ "rfd 0.15.4",
  "rust_xlsxwriter",
  "serde",
  "serde_json",
@@ -7138,20 +7141,6 @@ dependencies = [
  "tracing",
  "windows",
  "winreg",
-]
-
-[[package]]
-name = "wuwa-gacha-history-app"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "dioxus",
- "directories",
- "rfd 0.15.4",
- "serde",
- "serde_json",
- "tokio",
- "wuwa-gacha-history",
 ]
 
 [[package]]
