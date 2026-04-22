@@ -1,6 +1,8 @@
 pub mod app;
 pub mod core;
 
+use dioxus::prelude::*;
+
 fn main() {
-    dioxus::launch(app::App);
+    LaunchBuilder::desktop().launch(app::App);
 }

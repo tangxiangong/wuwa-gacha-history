@@ -7125,6 +7125,7 @@ dependencies = [
  "directories",
  "http-body-util",
  "hudsucker",
+ "png",
  "rcgen",
  "regex",
  "reqwest",

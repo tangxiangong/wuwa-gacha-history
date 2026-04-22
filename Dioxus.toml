@@ -1,4 +1,5 @@
 [application]
+name = "wuwa-gacha-history"
 
 [web.app]
 title = "鸣潮抽卡记录"
@@ -9,3 +10,80 @@ script = []
 
 [web.resource.dev]
 script = []
+
+[bundle]
+identifier = "com.tangxiangong.wuwa-gacha-history"
+publisher = "tangxiangong"
+copyright = "Copyright (c) 2026 tangxiangong"
+category = "Utility"
+short_description = "鸣潮抽卡记录查询与导出工具。"
+long_description = """
+鸣潮抽卡记录查询与导出工具。
+
+支持本地存储、按卡池和时间筛选，以及 CSV / XLSX / JSON 导出。
+提供手动 JSON、游戏日志读取和 MITM 抓包三种参数获取方式。
+"""
+icon = [
+    "assets/icons/32x32.png",
+    "assets/icons/128x128.png",
+    "assets/icons/icon.png",
+    "assets/icons/icon.ico",
+    "assets/icons/icon.icns",
+]
+
+[macos]
+identifier = "com.tangxiangong.wuwa-gacha-history"
+publisher = "tangxiangong"
+icon = ["assets/icons/icon.icns"]
+bundle_name = "鸣潮抽卡记录"
+category = "public.app-category.productivity"
+short_description = "鸣潮抽卡记录查询与导出工具。"
+long_description = "查询、筛选并导出鸣潮抽卡记录的桌面工具。"
+
+[windows]
+identifier = "com.tangxiangong.wuwa-gacha-history"
+publisher = "tangxiangong"
+icon = ["assets/icons/icon.ico"]
+icon_path = "assets/icons/icon.ico"
+category = "Utility"
+short_description = "鸣潮抽卡记录查询与导出工具。"
+long_description = "查询、筛选并导出鸣潮抽卡记录的桌面工具。"
+
+[windows.nsis]
+
+[bundle.windows.webview_install_mode.DownloadBootstrapper]
+silent = true
+
+[linux]
+identifier = "com.tangxiangong.wuwa-gacha-history"
+publisher = "tangxiangong"
+icon = [
+    "assets/icons/32x32.png",
+    "assets/icons/128x128.png",
+    "assets/icons/icon.png",
+]
+category = "Utility"
+short_description = "鸣潮抽卡记录查询与导出工具。"
+long_description = "查询、筛选并导出鸣潮抽卡记录的桌面工具。"
+categories = ["Utility"]
+keywords = ["wuwa", "gacha", "history", "export"]
+
+[linux.deb]
+section = "utils"
+priority = "optional"
+
+[ios]
+identifier = "com.tangxiangong.wuwa-gacha-history"
+publisher = "tangxiangong"
+icon = ["assets/icons/ios/AppIcon-512@2x.png"]
+category = "Utility"
+short_description = "鸣潮抽卡记录查询与导出工具。"
+long_description = "查询、筛选并导出鸣潮抽卡记录的移动端工具。"
+
+[android]
+identifier = "com.tangxiangong.wuwa-gacha-history"
+publisher = "tangxiangong"
+icon = ["assets/icons/icon.png"]
+category = "Utility"
+short_description = "鸣潮抽卡记录查询与导出工具。"
+long_description = "查询、筛选并导出鸣潮抽卡记录的移动端工具。"
